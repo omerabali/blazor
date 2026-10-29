@@ -1,27 +1,37 @@
-Online Kuaför Randevu ve Hizmet Rezervasyon Uygulaması
-Proje dokümantasyonu
-
-Teslim etmeden önce aşağıdaki üye bilgilerini doldurun.
+Kırklareli Üniversitesi
+Mühendislik Fakültesi
+Yazılım Mühendisliği Bölümü
+Ders: Web Programlama
+Ödev: Online Kuaför Randevu ve Hizmet Rezervasyon Uygulaması
 
 Üye 1
-Öğrenci numarası:
-Ad soyad:
+Öğrenci numarası: 1230505006
+Ad soyad: Ömer Abalı
 Üstlendiği görevler:
+- Uygun saat hesabı: 09:00–19:00, 30 dakikalık aralık, bitişin 19:00’ı geçmemesi
+- Geçmiş gün ve saatin kapatılması
+- Çakışma kuralı: busy-slots.json ve iptal edilmemiş randevular; yeniBaşlangıç < mevcutBitiş ve yeniBitiş > mevcutBaşlangıç
+- Onaydan hemen önce saatin yeniden kontrol edilmesi ve benzersiz randevu kodunun üretilmesi
+- Seçimlerin BookingStateService ile sayfalar arasında taşınması
+- Randevu ve iptal durumunun localStorage içinde saklanması; iptal edilen saatin yeniden uygun sayılması
 
 Üye 2
 Öğrenci numarası:
-Ad soyad:
+Ad soyad: Murat Aydoğan
 Üstlendiği görevler:
+- services.json, employees.json ve busy-slots.json dosyalarının hazırlanması
+- SalonDataService ile bu dosyaların HttpClient üzerinden asenkron okunması
+- SalonService, Employee, BusySlot ve Appointment modellerinin yazılması
+- ServiceSelector ile hizmet kartları, çoklu seçim, toplam süre ve toplam ücret
+- EmployeeSelector ile seçilen hizmetlerin tamamını verebilen çalışanların listelenmesi
 
 Üye 3
 Öğrenci numarası:
-Ad soyad:
+Ad soyad: Kerem Yıldız
 Üstlendiği görevler:
-
-Uygulamada bulunan başlıca işler
-- services.json, employees.json ve busy-slots.json dosyalarının SalonDataService ile asenkron okunması
-- ServiceSelector, EmployeeSelector, AppointmentCalendar, AppointmentSummary ve CustomerForm bileşenleri; Parameter ve EventCallback ile veri akışı
-- Çoklu hizmet seçimi, toplam süre ve ücret, uygun saat, çakışma engeli, randevu onayı ve iptal
-- EditForm, DataAnnotationsValidator, ValidationMessage ile ad, e-posta ve telefon doğrulaması
-- Seçimlerin BookingStateService ile sayfalar arasında taşınması; randevu ve iptal durumunun localStorage içinde saklanması
-- Bileşen bazlı scoped CSS, responsive düzen, dolu ve boş saatlerin metinle ayrılması
+- AppointmentCalendar ile gün ve saatlerin ekranda gösterilmesi
+- AppointmentSummary ile hizmet, çalışan, tarih, saat, toplam dakika ve ücret özeti
+- CustomerForm içinde EditForm, DataAnnotationsValidator ve ValidationMessage
+- [Required], [EmailAddress], [Phone] ve uzunluk kontrolleri
+- /my-appointments sayfasında randevuların listelenmesi ve iptal edilmesi
+- Scoped CSS ile sayfa düzeni ve uygun, dolu, geçmiş saatlerin ayrılması
