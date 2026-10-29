@@ -1,0 +1,41 @@
+@if (!Matches.Any())
+{
+    <p class="empty" role="status">Seçilen hizmetlerin tümünü veren çalışan yok. Hizmet seçimini daraltın.</p>
+}
+else
+{
+    <div class="grid" role="radiogroup" aria-label="Çalışanlar">
+        @foreach (var employee in Matches)
+        {
+            var id = employee.Id;
+            var selected = SelectedId == id;
+            <button type="button" class="card @(selected ? "is-selected" : null)" role="radio" aria-checked="@selected" @onclick="() => OnSelected.InvokeAsync(id)">
+                <span class="name">@employee.FullName</span>
+                @if (!string.IsNullOrWhiteSpace(employee.Title))
+                {
+                    <span class="title">@employee.Title</span>
+                }
+                <span class="skills">@SkillNames(employee)</span>
+                <span class="flag">@(selected ? "Seçili" : "Seç")</span>
+            </button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<Employee> Employees { get; set; } = [];
+    [Parameter] public IReadOnlyList<SalonService> Catalog { get; set; } = [];
+    [Parameter] public IReadOnlyCollection<string> RequiredServiceIds { get; set; } = [];
+    [Parameter] public string? SelectedId { get; set; }
+    [Parameter] public EventCallback<string> OnSelected { get; set; }
+
+    private IEnumerable<Employee> Matches => AvailabilityService.Eligible(Employees, RequiredServiceIds);
+
+    private string SkillNames(Employee employee)
+    {
+        var names = employee.ServiceIds
+            .Select(id => Catalog.FirstOrDefault(service => service.Id == id)?.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name));
+        return string.Join(" · ", names);
+    }
+}

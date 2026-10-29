@@ -1,0 +1,164 @@
+@page "/my-appointments"
+@inject SalonDataService Data
+@inject AppointmentStore Store
+@inject BookingStateService Booking
+
+<PageTitle>Randevularım</PageTitle>
+
+@if (_created is not null)
+{
+    <div class="backdrop" @onclick="CloseCreated">
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="created-title" @onclick:stopPropagation="true">
+            <span class="popup-icon" aria-hidden="true">✓</span>
+            <h2 id="created-title">Randevunuz başarıyla oluşturuldu</h2>
+            @if (_created.Item is { } item)
+            {
+                <p class="popup-when">@When(item)</p>
+                <p>@EmployeeName(item) · @ServiceNames(item)</p>
+            }
+            <p class="popup-code">Randevu kodunuz: <strong>@_created.Code</strong></p>
+            <button class="btn" type="button" @onclick="CloseCreated">Tamam</button>
+        </div>
+    </div>
+}
+
+<header class="page-head">
+    <p class="eyebrow">Randevularım</p>
+    <h1>Kayıtlı saatleriniz</h1>
+    <p>Randevular bu tarayıcıda saklanır. Başlangıcı gelmemiş olanı iptal edebilirsiniz.</p>
+</header>
+
+@if (_loadError is not null)
+{
+    <p class="banner" role="alert">@_loadError</p>
+}
+else if (!_ready)
+{
+    <p class="status">Randevular yükleniyor…</p>
+}
+else if (_items.Count == 0)
+{
+    <div class="empty">
+        <p>Henüz randevunuz yok.</p>
+        <a class="btn" href="services">Hizmet seç</a>
+    </div>
+}
+else
+{
+    <ul class="list">
+        @foreach (var item in _items)
+        {
+            var id = item.Id;
+            var cancelled = item.IsCancelled;
+            <li class="card @(cancelled ? "is-cancelled" : null)">
+                <div class="top">
+                    <strong>@item.Id</strong>
+                    <span class="badge @StatusClass(item)">@StatusText(item)</span>
+                </div>
+                <p class="when">@When(item)</p>
+                <p>@EmployeeName(item) · @ServiceNames(item)</p>
+                <p class="meta">@SalonFormat.Duration((int)(item.EndAt - item.StartAt).TotalMinutes) · @SalonFormat.Money(item.TotalPrice)</p>
+                <p class="who">@item.CustomerName · @item.Email · @item.Phone</p>
+                @if (CanCancel(item))
+                {
+                    @if (_confirmId == item.Id)
+                    {
+                        <div class="actions">
+                            <button class="btn danger" type="button" @onclick="() => CancelAsync(id)">İptali onayla</button>
+                            <button class="btn ghost" type="button" @onclick="CancelConfirm">Vazgeç</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="btn ghost" type="button" @onclick="() => AskCancel(id)">İptal et</button>
+                    }
+                }
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private IReadOnlyList<SalonService> _services = [];
+    private IReadOnlyList<Employee> _employees = [];
+    private List<Appointment> _items = [];
+    private string? _confirmId;
+    private string? _loadError;
+    private bool _ready;
+    private CreatedNotice? _created;
+
+    private sealed record CreatedNotice(string Code, Appointment? Item);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _services = await Data.GetServicesAsync();
+            _employees = await Data.GetEmployeesAsync();
+            await ReloadAsync();
+            _ready = true;
+
+            var code = Booking.TakeCreatedCode();
+            if (code is not null)
+                _created = new CreatedNotice(code, _items.FirstOrDefault(appointment => appointment.Id == code));
+        }
+        catch (Exception)
+        {
+            _loadError = "Randevular yüklenemedi. Sayfayı yenileyin.";
+        }
+    }
+
+    private async Task ReloadAsync()
+    {
+        _items = (await Store.GetAllAsync())
+            .OrderByDescending(appointment => appointment.StartAt)
+            .ToList();
+    }
+
+    private void CloseCreated() => _created = null;
+
+    private void AskCancel(string id) => _confirmId = id;
+
+    private void CancelConfirm() => _confirmId = null;
+
+    private async Task CancelAsync(string id)
+    {
+        await Store.CancelAsync(id);
+        _confirmId = null;
+        await ReloadAsync();
+    }
+
+    private static bool CanCancel(Appointment item) => !item.IsCancelled && item.StartAt > DateTime.Now;
+
+    private static string StatusText(Appointment item)
+    {
+        if (item.IsCancelled)
+            return "İptal edildi";
+        if (item.StartAt <= DateTime.Now)
+            return "Süresi geçti";
+        return "Yaklaşan";
+    }
+
+    private static string StatusClass(Appointment item)
+    {
+        if (item.IsCancelled)
+            return "is-cancelled";
+        if (item.StartAt <= DateTime.Now)
+            return "is-past";
+        return "is-upcoming";
+    }
+
+    private string When(Appointment item) =>
+        $"{SalonFormat.Date(DateOnly.FromDateTime(item.StartAt))} · {SalonFormat.Clock(item.StartAt)}–{SalonFormat.Clock(item.EndAt)}";
+
+    private string EmployeeName(Appointment item) =>
+        _employees.FirstOrDefault(employee => employee.Id == item.EmployeeId)?.FullName ?? item.EmployeeId;
+
+    private string ServiceNames(Appointment item)
+    {
+        var names = item.ServiceIds
+            .Select(id => _services.FirstOrDefault(service => service.Id == id)?.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name));
+        return string.Join(", ", names);
+    }
+}

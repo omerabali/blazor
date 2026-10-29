@@ -1,0 +1,53 @@
+.hero {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: var(--space-24);
+    align-items: stretch;
+    padding-top: var(--space-24);
+}
+
+h1 {
+    margin: 0 0 0.8rem;
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+    line-height: 0.98;
+}
+
+.lead {
+    max-width: 36rem;
+    color: var(--muted);
+    font-size: 1.15rem;
+}
+
+.board {
+    background: var(--ink);
+    color: var(--on-primary);
+    border-radius: var(--space-16);
+    padding: var(--space-24);
+}
+
+.board .eyebrow {
+    color: var(--secondary);
+}
+
+.hours {
+    margin: 0.2rem 0 0.8rem;
+    font-family: var(--serif);
+    font-size: 2.4rem;
+    line-height: 1;
+}
+
+.board ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--secondary);
+}
+
+.board li + li {
+    margin-top: 0.35rem;
+}
+
+@media (max-width: 800px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+}

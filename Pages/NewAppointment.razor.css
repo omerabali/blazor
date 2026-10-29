@@ -1,0 +1,20 @@
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    list-style: none;
+    margin: var(--space-12) 0 0;
+    padding: 0;
+}
+
+.chips li {
+    padding: var(--space-4) var(--space-12);
+    border-radius: var(--space-12);
+    background: var(--copper-soft);
+    color: var(--copper-dark);
+    font-weight: 700;
+}
+
+.page-head a {
+    margin-left: 0.4rem;
+}

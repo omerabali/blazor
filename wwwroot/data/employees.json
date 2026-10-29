@@ -1,0 +1,56 @@
+[
+  {
+    "id": "E01",
+    "fullName": "Ayşe Yılmaz",
+    "title": "Kıdemli stilist",
+    "serviceIds": ["S01", "S02", "S03", "S04", "S05", "S07", "S11", "S14", "S17"]
+  },
+  {
+    "id": "E02",
+    "fullName": "Mehmet Demir",
+    "title": "Berber",
+    "serviceIds": ["S01", "S02", "S08", "S13", "S19"]
+  },
+  {
+    "id": "E03",
+    "fullName": "Zeynep Kaya",
+    "title": "Bakım uzmanı",
+    "serviceIds": ["S02", "S07", "S09", "S10", "S11", "S18", "S21"]
+  },
+  {
+    "id": "E04",
+    "fullName": "Can Öztürk",
+    "title": "Teknik uzman",
+    "serviceIds": ["S01", "S03", "S06", "S08", "S12"]
+  },
+  {
+    "id": "E05",
+    "fullName": "Elif Arslan",
+    "title": "Renk uzmanı",
+    "serviceIds": ["S03", "S04", "S05", "S06", "S07", "S16", "S17", "S18"]
+  },
+  {
+    "id": "E06",
+    "fullName": "Burak Şahin",
+    "title": "Berber",
+    "serviceIds": ["S01", "S08", "S13", "S19"]
+  },
+  {
+    "id": "E07",
+    "fullName": "Selin Aydın",
+    "title": "Gelin saçı uzmanı",
+    "serviceIds": ["S02", "S07", "S11", "S14", "S15"]
+  },
+  {
+    "id": "E08",
+    "fullName": "Deniz Koç",
+    "title": "Renk ve bakım uzmanı",
+    "serviceIds": ["S03", "S06", "S07", "S16", "S17", "S18"]
+  },
+  {
+    "id": "E09",
+    "fullName": "Merve Çelik",
+    "title": "El ve ayak bakımı uzmanı",
+    "serviceIds": ["S09", "S10", "S20", "S21"]
+  }
+]

@@ -1,0 +1,46 @@
+<div class="groups">
+    @foreach (var group in Groups)
+    {
+        <section class="group" aria-label="@group.Key">
+            <h2>@group.Key</h2>
+            <ul class="grid">
+                @foreach (var service in group)
+                {
+                    var id = service.Id;
+                    var selected = SelectedIds.Contains(id);
+                    <li>
+                        <button type="button" class="card @(selected ? "is-selected" : null)" aria-pressed="@selected" @onclick="() => OnToggle.InvokeAsync(id)">
+                            <span class="name">@service.Name</span>
+                            @if (!string.IsNullOrWhiteSpace(service.Description))
+                            {
+                                <span class="description">@service.Description</span>
+                            }
+                            <span class="meta">
+                                <span>@SalonFormat.Duration(service.DurationMinutes)</span>
+                                <span>@SalonFormat.Money(service.Price)</span>
+                            </span>
+                            <span class="flag">@(selected ? "Seçili" : "Seç")</span>
+                        </button>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>
+
+@code {
+    private static readonly string[] CategoryOrder = ["Saç", "Renk", "Bakım", "Sakal", "El ve cilt"];
+
+    [Parameter] public IReadOnlyList<SalonService> Services { get; set; } = [];
+    [Parameter] public IReadOnlyCollection<string> SelectedIds { get; set; } = [];
+    [Parameter] public EventCallback<string> OnToggle { get; set; }
+
+    private IEnumerable<IGrouping<string, SalonService>> Groups =>
+        Services
+            .GroupBy(service => string.IsNullOrWhiteSpace(service.Category) ? "Diğer" : service.Category)
+            .OrderBy(group =>
+            {
+                var index = Array.IndexOf(CategoryOrder, group.Key);
+                return index < 0 ? CategoryOrder.Length : index;
+            });
+}

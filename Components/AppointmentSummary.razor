@@ -1,0 +1,82 @@
+<section class="summary" aria-label="Randevu özeti">
+    <dl>
+        <div>
+            <dt>Hizmetler</dt>
+            <dd>
+                @if (Services.Count == 0)
+                {
+                    <span class="missing">Henüz seçilmedi</span>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var service in Services)
+                        {
+                            <li>
+                                <span>@service.Name</span>
+                                <span>@SalonFormat.Duration(service.DurationMinutes)</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </dd>
+        </div>
+        <div>
+            <dt>Çalışan</dt>
+            <dd>@EmployeeText</dd>
+        </div>
+        <div>
+            <dt>Tarih</dt>
+            <dd>@(Date is null ? "—" : SalonFormat.Date(Date.Value))</dd>
+        </div>
+        <div>
+            <dt>Başlangıç</dt>
+            <dd>@(Start is null ? "—" : SalonFormat.Clock(Start.Value))</dd>
+        </div>
+        <div>
+            <dt>Bitiş</dt>
+            <dd>@EndText</dd>
+        </div>
+        <div>
+            <dt>Toplam süre</dt>
+            <dd>@TotalMinutes dakika@(TotalMinutes >= 60 ? $" ({SalonFormat.Duration(TotalMinutes)})" : "")</dd>
+        </div>
+        <div class="total">
+            <dt>Toplam ücret</dt>
+            <dd>@SalonFormat.Money(TotalPrice)</dd>
+        </div>
+    </dl>
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<SalonService> Services { get; set; } = [];
+    [Parameter] public Employee? Employee { get; set; }
+    [Parameter] public DateOnly? Date { get; set; }
+    [Parameter] public TimeOnly? Start { get; set; }
+    [Parameter] public int TotalMinutes { get; set; }
+    [Parameter] public decimal TotalPrice { get; set; }
+
+    private string EmployeeText
+    {
+        get
+        {
+            if (Employee is null)
+                return "—";
+            return string.IsNullOrWhiteSpace(Employee.Title)
+                ? Employee.FullName
+                : $"{Employee.FullName}, {Employee.Title}";
+        }
+    }
+
+    private string EndText
+    {
+        get
+        {
+            if (Date is null || Start is null || TotalMinutes <= 0)
+                return "—";
+
+            var end = Date.Value.ToDateTime(Start.Value).AddMinutes(TotalMinutes);
+            return SalonFormat.Clock(end);
+        }
+    }
+}

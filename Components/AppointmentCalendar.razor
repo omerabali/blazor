@@ -1,0 +1,135 @@
+<div class="calendar">
+    <p class="hours">Salon 09:00–19:00 açıktır. Başlangıçlar 30 dakikada birdir ve bitiş 19:00’ı geçemez.</p>
+    <div class="months">
+        @foreach (var month in Months)
+        {
+            <section class="month" aria-label="@SalonFormat.Month(month)">
+                <h3>@SalonFormat.Month(month)</h3>
+                <div class="week" aria-hidden="true">
+                    @foreach (var name in Weekdays)
+                    {
+                        <span>@name</span>
+                    }
+                </div>
+                <div class="days" role="radiogroup" aria-label="@SalonFormat.Month(month)">
+                    @foreach (var cell in Cells(month))
+                    {
+                        if (cell is null)
+                        {
+                            <span class="day is-empty"></span>
+                        }
+                        else
+                        {
+                            var date = cell.Value;
+                            var selected = SelectedDate == date;
+                            <button type="button"
+                                    class="day @(selected ? "is-selected" : null) @(date == Today ? "is-today" : null)"
+                                    disabled="@IsPast(date)"
+                                    aria-pressed="@selected"
+                                    aria-label="@SalonFormat.Date(date)"
+                                    @onclick="() => PickDay(date)">
+                                @date.Day
+                            </button>
+                        }
+                    }
+                </div>
+            </section>
+        }
+    </div>
+
+    @if (SelectedDate is not null && ShowSlots)
+    {
+        <div class="times">
+            <h3>@SalonFormat.Date(SelectedDate.Value)</h3>
+            @if (!string.IsNullOrWhiteSpace(SlotHint))
+            {
+                <p class="hint" role="status">@SlotHint</p>
+            }
+            @if (Slots.Count > 0)
+            {
+                <ul class="legend">
+                    <li><span class="swatch is-available"></span> Uygun</li>
+                    <li><span class="swatch is-busy"></span> Dolu</li>
+                    <li><span class="swatch is-past"></span> Geçti</li>
+                </ul>
+                <div class="slots" role="radiogroup" aria-label="Saatler">
+                    @foreach (var slot in Slots)
+                    {
+                        var start = slot.Start;
+                        var chosen = SelectedStart == start && slot.IsSelectable;
+                        <button type="button"
+                                class="slot @StateClass(slot.State) @(chosen ? "is-chosen" : null)"
+                                disabled="@(!slot.IsSelectable)"
+                                aria-pressed="@chosen"
+                                @onclick="() => PickSlot(start, slot.IsSelectable)">
+                            <span class="clock">@SalonFormat.Clock(start)</span>
+                            <span class="tag">@slot.StatusText</span>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="hint" role="status">@(string.IsNullOrWhiteSpace(SlotHint) ? "Bir gün seçin." : SlotHint)</p>
+    }
+</div>
+
+@code {
+    private static readonly string[] Weekdays = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+
+    [Parameter] public DateOnly? SelectedDate { get; set; }
+    [Parameter] public EventCallback<DateOnly> OnDateSelected { get; set; }
+    [Parameter] public TimeOnly? SelectedStart { get; set; }
+    [Parameter] public EventCallback<TimeOnly> OnTimeSelected { get; set; }
+    [Parameter] public IReadOnlyList<TimeSlotOption> Slots { get; set; } = [];
+    [Parameter] public bool ShowSlots { get; set; }
+    [Parameter] public string? SlotHint { get; set; }
+
+    private DateOnly Today => DateOnly.FromDateTime(DateTime.Now);
+    private IEnumerable<DateOnly> Months
+    {
+        get
+        {
+            var first = new DateOnly(Today.Year, Today.Month, 1);
+            yield return first;
+            yield return first.AddMonths(1);
+        }
+    }
+
+    private static IEnumerable<DateOnly?> Cells(DateOnly month)
+    {
+        var first = new DateOnly(month.Year, month.Month, 1);
+        var pad = ((int)first.DayOfWeek + 6) % 7;
+        for (var index = 0; index < pad; index++)
+            yield return null;
+
+        var count = DateTime.DaysInMonth(month.Year, month.Month);
+        for (var day = 1; day <= count; day++)
+            yield return new DateOnly(month.Year, month.Month, day);
+    }
+
+    private bool IsPast(DateOnly date) => date < Today;
+
+    private Task PickDay(DateOnly date)
+    {
+        if (IsPast(date))
+            return Task.CompletedTask;
+        return OnDateSelected.InvokeAsync(date);
+    }
+
+    private Task PickSlot(TimeOnly start, bool selectable)
+    {
+        if (!selectable)
+            return Task.CompletedTask;
+        return OnTimeSelected.InvokeAsync(start);
+    }
+
+    private static string StateClass(SlotState state) => state switch
+    {
+        SlotState.Busy => "is-busy",
+        SlotState.Past => "is-past",
+        _ => "is-available"
+    };
+}

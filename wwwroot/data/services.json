@@ -1,0 +1,170 @@
+[
+  {
+    "id": "S01",
+    "name": "Saç Kesimi",
+    "category": "Saç",
+    "description": "Yıkama sonrası form kesimi ve uç temizliği.",
+    "durationMinutes": 30,
+    "price": 450
+  },
+  {
+    "id": "S02",
+    "name": "Fön",
+    "category": "Saç",
+    "description": "Fırça ile hacim ve günlük şekillendirme.",
+    "durationMinutes": 30,
+    "price": 250
+  },
+  {
+    "id": "S11",
+    "name": "Topuz",
+    "category": "Saç",
+    "description": "Özel gün için toplama ve sabitleme.",
+    "durationMinutes": 60,
+    "price": 650
+  },
+  {
+    "id": "S12",
+    "name": "Perma",
+    "category": "Saç",
+    "description": "Kalıcı dalga ve sonrasında şekillendirme.",
+    "durationMinutes": 120,
+    "price": 1600
+  },
+  {
+    "id": "S03",
+    "name": "Saç Boyama",
+    "category": "Renk",
+    "description": "Tek renk boya, dip kapatma dahil.",
+    "durationMinutes": 90,
+    "price": 1400
+  },
+  {
+    "id": "S04",
+    "name": "Röfle",
+    "category": "Renk",
+    "description": "İnce tutamlara açık renk uygulaması.",
+    "durationMinutes": 120,
+    "price": 1700
+  },
+  {
+    "id": "S05",
+    "name": "Balyaj",
+    "category": "Renk",
+    "description": "Serbest el ile dipte koyu, uçta açık geçiş.",
+    "durationMinutes": 150,
+    "price": 2100
+  },
+  {
+    "id": "S06",
+    "name": "Keratin Bakım",
+    "category": "Bakım",
+    "description": "Isı ile uygulanan düzleştirici bakım.",
+    "durationMinutes": 60,
+    "price": 950
+  },
+  {
+    "id": "S07",
+    "name": "Saç Bakımı",
+    "category": "Bakım",
+    "description": "Nem maskesi, bekletme ve durulama.",
+    "durationMinutes": 45,
+    "price": 500
+  },
+  {
+    "id": "S08",
+    "name": "Sakal Tıraşı",
+    "category": "Sakal",
+    "description": "Sakal hattı, tıraş ve nemlendirici.",
+    "durationMinutes": 30,
+    "price": 250
+  },
+  {
+    "id": "S09",
+    "name": "Manikür",
+    "category": "El ve cilt",
+    "description": "Tırnak şekli, et temizliği ve bakım.",
+    "durationMinutes": 45,
+    "price": 400
+  },
+  {
+    "id": "S10",
+    "name": "Cilt Bakımı",
+    "category": "El ve cilt",
+    "description": "Yüz temizliği, peeling ve nemlendirme.",
+    "durationMinutes": 60,
+    "price": 750
+  },
+  {
+    "id": "S13",
+    "name": "Çocuk Saç Kesimi",
+    "category": "Saç",
+    "description": "12 yaş altı için kısa ve pratik kesim.",
+    "durationMinutes": 30,
+    "price": 300
+  },
+  {
+    "id": "S14",
+    "name": "Dalgalı Fön",
+    "category": "Saç",
+    "description": "Maşa ve fön ile kalıcı görünümlü dalga.",
+    "durationMinutes": 45,
+    "price": 400
+  },
+  {
+    "id": "S15",
+    "name": "Gelin Başı",
+    "category": "Saç",
+    "description": "Prova sonrası gelin topuzu ve aksesuar yerleşimi.",
+    "durationMinutes": 120,
+    "price": 2500
+  },
+  {
+    "id": "S16",
+    "name": "Ombre",
+    "category": "Renk",
+    "description": "Dipten uca yumuşak renk geçişi.",
+    "durationMinutes": 150,
+    "price": 2200
+  },
+  {
+    "id": "S17",
+    "name": "Dip Boya",
+    "category": "Renk",
+    "description": "Uzayan diplerin mevcut renge göre kapatılması.",
+    "durationMinutes": 60,
+    "price": 900
+  },
+  {
+    "id": "S18",
+    "name": "Bağ Onarıcı Bakım",
+    "category": "Bakım",
+    "description": "Boya sonrası yıpranan saç için onarıcı kür.",
+    "durationMinutes": 45,
+    "price": 800
+  },
+  {
+    "id": "S19",
+    "name": "Sakal Şekillendirme",
+    "category": "Sakal",
+    "description": "Makine ile sakal formu ve kenar düzeltme.",
+    "durationMinutes": 30,
+    "price": 200
+  },
+  {
+    "id": "S20",
+    "name": "Pedikür",
+    "category": "El ve cilt",
+    "description": "Ayak bakımı, tırnak şekli ve nemlendirme.",
+    "durationMinutes": 60,
+    "price": 550
+  },
+  {
+    "id": "S21",
+    "name": "Kaş Alımı",
+    "category": "El ve cilt",
+    "description": "İp veya cımbız ile kaş şekillendirme.",
+    "durationMinutes": 30,
+    "price": 200
+  }
+]

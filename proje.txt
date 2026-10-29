@@ -1,0 +1,27 @@
+Online Kuaför Randevu ve Hizmet Rezervasyon Uygulaması
+Proje dokümantasyonu
+
+Teslim etmeden önce aşağıdaki üye bilgilerini doldurun.
+
+Üye 1
+Öğrenci numarası:
+Ad soyad:
+Üstlendiği görevler:
+
+Üye 2
+Öğrenci numarası:
+Ad soyad:
+Üstlendiği görevler:
+
+Üye 3
+Öğrenci numarası:
+Ad soyad:
+Üstlendiği görevler:
+
+Uygulamada bulunan başlıca işler
+- services.json, employees.json ve busy-slots.json dosyalarının SalonDataService ile asenkron okunması
+- ServiceSelector, EmployeeSelector, AppointmentCalendar, AppointmentSummary ve CustomerForm bileşenleri; Parameter ve EventCallback ile veri akışı
+- Çoklu hizmet seçimi, toplam süre ve ücret, uygun saat, çakışma engeli, randevu onayı ve iptal
+- EditForm, DataAnnotationsValidator, ValidationMessage ile ad, e-posta ve telefon doğrulaması
+- Seçimlerin BookingStateService ile sayfalar arasında taşınması; randevu ve iptal durumunun localStorage içinde saklanması
+- Bileşen bazlı scoped CSS, responsive düzen, dolu ve boş saatlerin metinle ayrılması

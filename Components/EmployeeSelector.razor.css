@@ -1,0 +1,71 @@
+.empty {
+    margin: 0;
+    padding: var(--space-16);
+    border-radius: var(--space-16);
+    background: var(--copper-soft);
+    color: var(--ink);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-16);
+}
+
+.card {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-8);
+    min-height: 132px;
+    padding: var(--space-16);
+    border-radius: var(--space-16);
+    border: 1px solid var(--line);
+    background: var(--paper);
+    cursor: pointer;
+}
+
+.card:hover {
+    border-color: var(--primary);
+}
+
+.card.is-selected {
+    background: var(--ink);
+    color: var(--on-primary);
+    border-color: var(--ink);
+}
+
+.name {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    line-height: 1.15;
+}
+
+.title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--copper-dark);
+}
+
+.skills {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.card.is-selected .title,
+.card.is-selected .skills,
+.card.is-selected .flag {
+    color: var(--secondary);
+}
+
+.flag {
+    margin-top: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--copper-dark);
+}

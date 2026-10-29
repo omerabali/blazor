@@ -1,0 +1,34 @@
+<EditForm Model="Model" OnValidSubmit="SubmitAsync" novalidate>
+    <DataAnnotationsValidator />
+    <div class="fields">
+        <div class="field">
+            <label for="customer-name">Ad soyad</label>
+            <InputText id="customer-name" @bind-Value="Model.FullName" maxlength="80" autocomplete="name" aria-required="true" />
+            <ValidationMessage For="() => Model.FullName" />
+        </div>
+        <div class="field">
+            <label for="customer-email">E-posta</label>
+            <InputText id="customer-email" type="email" @bind-Value="Model.Email" maxlength="120" placeholder="ad.soyad@gmail.com" autocomplete="email" aria-required="true" />
+            <ValidationMessage For="() => Model.Email" />
+        </div>
+        <div class="field">
+            <label for="customer-phone">Telefon</label>
+            <InputText id="customer-phone" @bind-Value="Model.Phone" maxlength="10" inputmode="numeric" placeholder="5XXXXXXXXX" autocomplete="tel" aria-required="true" />
+            <ValidationMessage For="() => Model.Phone" />
+        </div>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <p class="form-error" role="alert">@Error</p>
+    }
+    <button class="btn" type="submit" disabled="@Busy">@(Busy ? "Kaydediliyor…" : "Randevuyu oluştur")</button>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public CustomerInfo Model { get; set; } = new();
+    [Parameter] public EventCallback<CustomerInfo> OnValidSubmit { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Busy { get; set; }
+
+    private Task SubmitAsync() => OnValidSubmit.InvokeAsync(Model);
+}

@@ -1,0 +1,71 @@
+@page "/services"
+@inject SalonDataService Data
+@inject BookingStateService Booking
+@implements IDisposable
+
+<PageTitle>Hizmetler</PageTitle>
+
+@if (_loadError is not null)
+{
+    <p class="banner" role="alert">@_loadError</p>
+}
+else if (_services is null)
+{
+    <p class="status">Hizmetler yükleniyor…</p>
+}
+else
+{
+    <header class="page-head">
+        <p class="eyebrow">Hizmetler</p>
+        <h1>Ne yaptırmak istersiniz?</h1>
+        <p>Bir veya daha fazla hizmet seçin. Süre ve ücret anında toplanır.</p>
+    </header>
+
+    <ServiceSelector Services="_services" SelectedIds="Booking.SelectedServiceIds" OnToggle="Toggle" />
+
+    <div class="dock" aria-live="polite">
+        <p>
+            <strong>@Chosen.Count</strong> hizmet
+            <span>@SalonFormat.Duration(TotalMinutes)</span>
+            <span>@SalonFormat.Money(TotalPrice)</span>
+        </p>
+        @if (Chosen.Count == 0)
+        {
+            <button class="btn" type="button" disabled>Devam</button>
+        }
+        else
+        {
+            <a class="btn" href="appointments/new">Devam</a>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<SalonService>? _services;
+    private string? _loadError;
+
+    private IReadOnlyList<SalonService> Chosen =>
+        (_services ?? []).Where(service => Booking.SelectedServiceIds.Contains(service.Id)).ToList();
+
+    private int TotalMinutes => Chosen.Sum(service => service.DurationMinutes);
+    private decimal TotalPrice => Chosen.Sum(service => service.Price);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Booking.Changed += OnChanged;
+        try
+        {
+            _services = await Data.GetServicesAsync();
+        }
+        catch (Exception)
+        {
+            _loadError = "Hizmetler yüklenemedi. Sayfayı yenileyin.";
+        }
+    }
+
+    private void Toggle(string id) => Booking.ToggleService(id);
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Booking.Changed -= OnChanged;
+}

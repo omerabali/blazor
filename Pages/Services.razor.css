@@ -1,0 +1,41 @@
+.dock {
+    position: sticky;
+    bottom: var(--space-16);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-16);
+    margin-top: var(--space-24);
+    padding: var(--space-16);
+    border-radius: var(--space-16);
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+.dock p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    margin: 0;
+}
+
+.dock .btn {
+    background: var(--on-primary);
+    color: var(--primary);
+}
+
+.dock .btn:hover {
+    background: var(--secondary);
+}
+
+.dock .btn:disabled {
+    background: var(--secondary);
+    color: var(--muted);
+}
+
+@media (max-width: 640px) {
+    .dock {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
