@@ -1,6 +1,5 @@
 .summary {
-    background: var(--bg-deep);
-    border-radius: var(--space-16);
+    background: var(--surface);
     padding: var(--space-8) var(--space-16);
 }
 
@@ -10,10 +9,15 @@ dl {
 
 dl > div {
     display: grid;
-    grid-template-columns: 8.5rem 1fr;
+    grid-template-columns: minmax(5rem, 0.75fr) minmax(0, 1fr);
     gap: var(--space-12);
     padding: var(--space-12) 0;
     border-bottom: 1px solid var(--line);
+}
+
+dl > div:first-child {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
 }
 
 dl > div:last-child {
@@ -40,6 +44,10 @@ li {
     gap: var(--space-12);
 }
 
+li span:last-child {
+    white-space: nowrap;
+}
+
 .total dd {
     font-family: var(--serif);
     font-size: 1.6rem;
@@ -47,11 +55,4 @@ li {
 
 .missing {
     color: var(--muted);
-}
-
-@media (max-width: 560px) {
-    dl > div {
-        grid-template-columns: 1fr;
-        gap: 0.15rem;
-    }
 }

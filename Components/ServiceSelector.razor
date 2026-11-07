@@ -8,19 +8,38 @@
                 {
                     var id = service.Id;
                     var selected = SelectedIds.Contains(id);
-                    <li>
-                        <button type="button" class="card @(selected ? "is-selected" : null)" aria-pressed="@selected" @onclick="() => OnToggle.InvokeAsync(id)">
-                            <span class="name">@service.Name</span>
-                            @if (!string.IsNullOrWhiteSpace(service.Description))
-                            {
-                                <span class="description">@service.Description</span>
-                            }
-                            <span class="meta">
-                                <span>@SalonFormat.Duration(service.DurationMinutes)</span>
-                                <span>@SalonFormat.Money(service.Price)</span>
-                            </span>
-                            <span class="flag">@(selected ? "Seçili" : "Seç")</span>
-                        </button>
+                    <li @key="id">
+                        <div class="card @(selected ? "is-selected" : null)">
+                            <button type="button" class="photo" aria-label="@($"{service.Name} incele")" @onclick="() => OnInspect.InvokeAsync(service)">
+                                @if (!string.IsNullOrWhiteSpace(service.Image))
+                                {
+                                    <img src="@service.Image" alt="" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span class="letters">@(string.IsNullOrEmpty(service.Name) ? "?" : service.Name[..1])</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(service.Tag))
+                                {
+                                    <span class="tag">@service.Tag</span>
+                                }
+                                <span class="inspect-label" aria-hidden="true">İncele</span>
+                            </button>
+                            <button type="button" class="body" aria-pressed="@(selected ? "true" : "false")" @onclick="() => OnToggle.InvokeAsync(id)">
+                                <span class="name">@service.Name</span>
+                                @if (!string.IsNullOrWhiteSpace(service.Description))
+                                {
+                                    <span class="description">@service.Description</span>
+                                }
+                                <span class="card-footer">
+                                    <span class="meta">
+                                        <strong>@SalonFormat.Money(service.Price)</strong>
+                                        <span>@SalonFormat.Duration(service.DurationMinutes)</span>
+                                    </span>
+                                    <span class="flag" aria-hidden="true">@(selected ? "✓ Seçili · Çıkar" : "+ Ekle")</span>
+                                </span>
+                            </button>
+                        </div>
                     </li>
                 }
             </ul>
@@ -34,6 +53,7 @@
     [Parameter] public IReadOnlyList<SalonService> Services { get; set; } = [];
     [Parameter] public IReadOnlyCollection<string> SelectedIds { get; set; } = [];
     [Parameter] public EventCallback<string> OnToggle { get; set; }
+    [Parameter] public EventCallback<SalonService> OnInspect { get; set; }
 
     private IEnumerable<IGrouping<string, SalonService>> Groups =>
         Services

@@ -1,4 +1,5 @@
 @page "/appointments/new"
+@using System.Text.Json
 @inject SalonDataService Data
 @inject BookingStateService Booking
 @inject AppointmentStore Store
@@ -8,9 +9,14 @@
 
 <PageTitle>Randevu al</PageTitle>
 
+<div class="page">
 @if (_loadError is not null)
 {
     <p class="banner" role="alert">@_loadError</p>
+    <div class="load-actions">
+        <button class="btn" type="button" @onclick="LoadAsync">Tekrar dene</button>
+        <a href="services">Hizmetlere dön</a>
+    </div>
 }
 else if (!_ready)
 {
@@ -27,6 +33,8 @@ else if (Chosen.Count == 0)
 }
 else
 {
+    var slots = Slots;
+    var hasEligibleEmployee = AvailabilityService.Eligible(_employees, Booking.SelectedServiceIds).Any();
     <header class="page-head">
         <p class="eyebrow">Randevu</p>
         <h1>Çalışan ve saat</h1>
@@ -42,41 +50,71 @@ else
         </ul>
     </header>
 
-    <section class="panel">
-        <h2>1. Çalışan</h2>
-        <EmployeeSelector Employees="_employees"
-                          Catalog="_services"
-                          RequiredServiceIds="Booking.SelectedServiceIds"
-                          SelectedId="@Booking.EmployeeId"
-                          OnSelected="SelectEmployee" />
-    </section>
+    <ol class="steps" aria-label="Randevu adımları">
+        <li class="is-done">1. Hizmet</li>
+        <li class="@(StepClass(2))" aria-current="@(Step == 2 ? "step" : null)">2. Çalışan</li>
+        <li class="@(StepClass(3))" aria-current="@(Step == 3 ? "step" : null)">3. Gün ve saat</li>
+        <li class="@(StepClass(4))" aria-current="@(Step == 4 ? "step" : null)">4. Bilgiler</li>
+    </ol>
 
-    <section class="panel">
-        <h2>2. Gün ve saat</h2>
-        <AppointmentCalendar SelectedDate="Booking.Date"
-                             OnDateSelected="SelectDate"
-                             SelectedStart="Booking.StartTime"
-                             OnTimeSelected="SelectStart"
-                             Slots="Slots"
-                             ShowSlots="ShowSlots"
-                             SlotHint="@SlotHint" />
-    </section>
+    <div class="book">
+        <section class="panel step-staff">
+            <h2>Çalışan</h2>
+            <EmployeeSelector Employees="_employees"
+                              RequiredServiceIds="Booking.SelectedServiceIds"
+                              SelectedId="@Booking.EmployeeId"
+                              Disabled="_saving"
+                              OnSelected="SelectEmployee" />
+            @if (!hasEligibleEmployee)
+            {
+                <a class="btn section-action" href="services">Hizmetleri değiştir</a>
+            }
+        </section>
 
-    <section class="panel">
-        <h2>3. Özet</h2>
-        <AppointmentSummary Services="Chosen"
-                            Employee="ChosenEmployee"
-                            Date="Booking.Date"
-                            Start="Booking.StartTime"
-                            TotalMinutes="TotalMinutes"
-                            TotalPrice="TotalPrice" />
-    </section>
+        @if (hasEligibleEmployee)
+        {
+            <section class="panel step-time">
+                <h2>Gün ve saat</h2>
+                @if (ChosenEmployee is null)
+                {
+                    <p class="note">Takvimi açmak için önce bir çalışan seçin.</p>
+                }
+                else
+                {
+                    <AppointmentCalendar SelectedDate="Booking.Date"
+                                         OnDateSelected="SelectDate"
+                                         SelectedStart="Booking.StartTime"
+                                         OnTimeSelected="SelectStart"
+                                         Slots="slots"
+                                         ShowSlots="ShowSlots"
+                                         Disabled="_saving"
+                                         SlotHint="@GetSlotHint(slots)" />
+                }
+            </section>
+        }
 
-    <section class="panel">
-        <h2>4. Bilgileriniz</h2>
-        <CustomerForm Model="_customer" OnValidSubmit="ConfirmAsync" Error="@_error" Busy="_saving" />
-    </section>
+        <section class="panel step-summary">
+            <h2>Randevu özeti</h2>
+            <AppointmentSummary Services="Chosen"
+                                Employee="ChosenEmployee"
+                                Date="Booking.Date"
+                                Start="Booking.StartTime"
+                                TotalMinutes="TotalMinutes"
+                                TotalPrice="TotalPrice" />
+        </section>
+
+        @if (_formOpened)
+        {
+            <section class="panel step-form">
+                <h2>Bilgileriniz</h2>
+                <p class="note">Kayıt bu tarayıcıda kalır.</p>
+                <CustomerForm Model="_customer" OnValidSubmit="ConfirmAsync" Error="@_error" Busy="_saving"
+                              Confirmation="@Confirmation" />
+            </section>
+        }
+    </div>
 }
+</div>
 
 @code {
     private IReadOnlyList<SalonService> _services = [];
@@ -88,6 +126,8 @@ else
     private string? _error;
     private bool _ready;
     private bool _saving;
+    private bool _formOpened;
+    private bool _disposed;
 
     private List<SalonService> Chosen =>
         _services.Where(service => Booking.SelectedServiceIds.Contains(service.Id)).ToList();
@@ -100,66 +140,98 @@ else
 
     private bool ShowSlots => Booking.EmployeeId is not null && Booking.Date is not null;
 
+    private string? Confirmation => ShowSlots && Booking.Date is { } date && Booking.StartTime is { } start
+        ? $"{SalonFormat.Date(date)}, {SalonFormat.Clock(start)}"
+        : null;
+
+    private int Step
+    {
+        get
+        {
+            if (Booking.EmployeeId is null)
+                return 2;
+            if (Booking.Date is null || Booking.StartTime is null)
+                return 3;
+            return 4;
+        }
+    }
+
+    private string StepClass(int index) => index == Step ? "is-current" : index < Step ? "is-done" : "";
+
     private IReadOnlyList<TimeSlotOption> Slots =>
         !ShowSlots || Booking.Date is null || Booking.EmployeeId is null
             ? []
             : Availability.GetSlots(Booking.Date.Value, TotalMinutes, Booking.EmployeeId, _busy, _appointments);
 
-    private string? SlotHint
+    private string? GetSlotHint(IReadOnlyList<TimeSlotOption> slots)
     {
-        get
-        {
-            if (Booking.EmployeeId is null)
-                return "Saatleri görmek için bir çalışan seçin.";
-            if (Booking.Date is null)
-                return "Bir gün seçin. Geçmiş günler kapalıdır.";
-            if (Slots.Count == 0)
-                return "Seçilen hizmetlerin toplam süresi 19:00 kapanışına sığmıyor.";
-            if (Slots.All(slot => !slot.IsSelectable))
-            {
-                return Slots.All(slot => slot.State == SlotState.Past)
-                    ? "Bugünün başlangıç saatleri geçti."
-                    : "Bu günde uygun saat kalmadı. Dolu saatler pasif.";
-            }
+        if (Booking.EmployeeId is null)
+            return "Saatleri görmek için bir çalışan seçin.";
+        if (Booking.Date is null)
+            return "Bir gün seçin. Geçmiş günler kapalıdır.";
+        if (slots.Count == 0)
+            return "Seçilen hizmetlerin toplam süresi 19:00 kapanışına sığmıyor.";
 
-            return null;
-        }
+        var available = slots.Count(slot => slot.IsSelectable);
+        if (available > 0)
+            return $"{available} uygun başlangıç saati var.";
+
+        return slots.All(slot => slot.State == SlotState.Past)
+            ? "Bugünün başlangıç saatleri geçti."
+            : "Bu günde uygun saat kalmadı. Başka bir gün seçin.";
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         Booking.Changed += OnChanged;
+        return LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null;
         try
         {
             _services = await Data.GetServicesAsync();
             _employees = await Data.GetEmployeesAsync();
-            _busy = await Data.GetBusySlotsAsync();
-            _appointments = await Store.GetAllAsync();
-            Booking.ClearEmployeeIfMissing(AvailabilityService.Eligible(_employees, Booking.SelectedServiceIds).Select(employee => employee.Id));
-            DropStaleStart();
+            if (Chosen.Count > 0)
+            {
+                _busy = await Data.GetBusySlotsAsync();
+                _appointments = await Store.GetAllAsync();
+                Booking.ClearEmployeeIfMissing(AvailabilityService.Eligible(_employees, Booking.SelectedServiceIds).Select(employee => employee.Id));
+                DropStaleStart();
+                _formOpened = Booking.StartTime is not null;
+            }
             _ready = true;
         }
         catch (Exception)
         {
-            _loadError = "Salon bilgileri yüklenemedi. Sayfayı yenileyin.";
+            _loadError = "Randevu için gerekli bilgiler yüklenemedi.";
         }
     }
 
     private void SelectEmployee(string id)
     {
+        if (_saving)
+            return;
         Booking.SetEmployee(id);
         _error = null;
     }
 
     private void SelectDate(DateOnly date)
     {
+        if (_saving)
+            return;
         Booking.SetDate(date);
         _error = null;
     }
 
     private void SelectStart(TimeOnly start)
     {
+        if (_saving)
+            return;
         Booking.SetStartTime(start);
+        _formOpened = true;
         _error = null;
     }
 
@@ -184,27 +256,11 @@ else
             return;
         }
 
-        _appointments = await Store.GetAllAsync();
-        var open = Availability.IsSelectable(
-            Booking.Date.Value,
-            Booking.StartTime.Value,
-            TotalMinutes,
-            Booking.EmployeeId,
-            _busy,
-            _appointments);
-
-        if (!open)
-        {
-            _error = "Bu saat artık uygun değil. Başka bir saat seçin.";
-            Booking.SetStartTime(null);
-            return;
-        }
-
         _saving = true;
+        _error = null;
         var start = Booking.Date.Value.ToDateTime(Booking.StartTime.Value);
         var appointment = new Appointment
         {
-            Id = Store.CreateCode(start),
             EmployeeId = Booking.EmployeeId,
             ServiceIds = Chosen.Select(service => service.Id).ToList(),
             StartAt = start,
@@ -216,12 +272,39 @@ else
             IsCancelled = false
         };
 
-        await Store.AddAsync(appointment);
-        Booking.MarkCreated(appointment.Id);
-        Nav.NavigateTo("/my-appointments");
+        try
+        {
+            var result = await Store.TryAddAsync(appointment, _busy);
+            if (_disposed)
+                return;
+
+            _appointments = result.Appointments;
+            if (!result.Changed)
+            {
+                _error = "Bu saat artık uygun değil. Başka bir saat seçin.";
+                Booking.SetStartTime(null);
+                return;
+            }
+
+            Booking.SetStartTime(null);
+            Booking.MarkCreated(appointment.Id);
+            Nav.NavigateTo("/my-appointments");
+        }
+        catch (Exception ex) when (ex is JSException or JsonException)
+        {
+            _error = "Randevu tarayıcıya kaydedilemedi. Güncel bir tarayıcıda HTTPS veya localhost üzerinden açın, depolamayı kontrol edin ve tekrar deneyin.";
+        }
+        finally
+        {
+            _saving = false;
+        }
     }
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Booking.Changed -= OnChanged;
+    public void Dispose()
+    {
+        _disposed = true;
+        Booking.Changed -= OnChanged;
+    }
 }

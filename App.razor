@@ -6,7 +6,14 @@
     <NotFound>
         <PageTitle>Sayfa bulunamadı</PageTitle>
         <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Bu adreste bir sayfa yok.</p>
+            <div class="page">
+                <header class="page-head">
+                    <p class="eyebrow">404</p>
+                    <h1>Bu adreste bir sayfa yok.</h1>
+                    <p>Aradığınız sayfa taşınmış olabilir. Ana sayfadan hizmetlere dönebilirsiniz.</p>
+                    <a class="btn" href="">Ana sayfaya dön</a>
+                </header>
+            </div>
         </LayoutView>
     </NotFound>
 </Router>

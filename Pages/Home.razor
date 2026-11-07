@@ -1,21 +1,209 @@
 ﻿@page "/"
+@inject SalonDataService Data
+@inject SalonContentService Content
 
 <PageTitle>Atölye</PageTitle>
 
-<section class="hero">
-    <div>
-        <p class="eyebrow">Kuaför randevusu</p>
-        <h1>Saçınız için sakin bir saat.</h1>
-        <p class="lead">Hizmeti seçin, o işi yapan çalışanı ve uygun saati ayırın. Kayıt bu tarayıcıda kalır.</p>
-        <a class="btn" href="services">Hizmetlere bak</a>
+@if (_loadError is not null)
+{
+    <div class="page">
+        <p class="banner" role="alert">@_loadError</p>
     </div>
-    <aside class="board" aria-label="Salon saatleri">
-        <p class="eyebrow">Çalışma</p>
-        <p class="hours">09:00 – 19:00</p>
-        <ul>
-            <li>Başlangıçlar 30 dakikada bir</li>
-            <li>Birden fazla hizmet seçilebilir</li>
-            <li>Dolu saatler kapalı görünür</li>
+}
+else if (!_ready)
+{
+    <div class="page">
+        <p class="status">Salon açılıyor…</p>
+    </div>
+}
+else
+{
+    <section class="hero">
+        <img class="hero-photo" src="images/hero.jpg" alt="Atölye salonunun içi" fetchpriority="high" />
+        <div class="hero-shade"></div>
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <p class="eyebrow">Kırklareli · @_salon.Founded</p>
+                <h1>Saçınız için sakin bir saat.</h1>
+                <p class="lead">Hizmeti seçin, o işi yapan çalışanı ve uygun saati ayırın.</p>
+                <div class="hero-actions">
+                    <a class="btn" href="services">Hizmet seç</a>
+                </div>
+            </div>
+            <aside class="board" aria-label="Salon saatleri">
+                <p class="eyebrow">Çalışma saatleri</p>
+                <p class="hours">09:00 – 19:00</p>
+            </aside>
+        </div>
+    </section>
+
+    <section class="block" aria-labelledby="category-heading">
+        <header class="block-head">
+            <h2 id="category-heading">Hizmetlere göz atın</h2>
+        </header>
+        <div class="doors">
+            @foreach (var door in Doors)
+            {
+                <a class="door" href="@door.Href">
+                    <img src="@door.Image" alt="" loading="lazy" />
+                    <strong>@door.Title</strong>
+                </a>
+            }
+        </div>
+    </section>
+
+    <section class="block">
+        <header class="block-head">
+            <h2>Öne çıkan hizmetler</h2>
+            <a href="services">Tüm hizmetler</a>
+        </header>
+        <ul class="features">
+            @foreach (var service in Featured)
+            {
+                <li>
+                    <a class="feature" href="@($"services?hizmet={service.Id}")">
+                        <span class="feature-media">
+                            @if (!string.IsNullOrWhiteSpace(service.Image))
+                            {
+                                <img src="@service.Image" alt="" loading="lazy" />
+                            }
+                        </span>
+                        <span class="feature-copy">
+                            <strong>@service.Name</strong>
+                            <span class="feature-meta">
+                                <span>@SalonFormat.Duration(service.DurationMinutes)</span>
+                                <strong>@SalonFormat.Money(service.Price)</strong>
+                            </span>
+                        </span>
+                    </a>
+                </li>
+            }
         </ul>
-    </aside>
-</section>
+    </section>
+
+    <section class="block">
+        <header class="block-head">
+            <h2>Atölye ekibi</h2>
+            <a href="ekip">Tüm ekip</a>
+        </header>
+        <ul class="team">
+            @foreach (var employee in _employees.Take(4))
+            {
+                <li>
+                    <a class="person-card" href="@($"ekip?calisan={Uri.EscapeDataString(employee.Id)}")">
+                        <Portrait Src="@employee.Image" Name="@employee.FullName" />
+                        <span class="person-copy">
+                            <strong>@employee.FullName</strong>
+                            <span>@employee.Title</span>
+                        </span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </section>
+
+    <section class="block">
+        <header class="block-head">
+            <h2>Atölyeden kareler</h2>
+            <a href="salon">Salonu gör</a>
+        </header>
+        <SalonGallery Shots="_gallery.Take(6)" />
+    </section>
+
+    @if (_quotes.Count > 0)
+    {
+        <section class="reviews" aria-labelledby="reviews-heading">
+            <div class="block">
+                <header class="block-head">
+                    <h2 id="reviews-heading">Müşteri yorumları</h2>
+                </header>
+                <ul class="quotes">
+                    @foreach (var quote in _quotes.Take(3))
+                    {
+                        <li>
+                            <figure class="quote-card">
+                                <div class="score" role="img" aria-label="@($"5 üzerinden {quote.Rating}")">
+                                    @for (var mark = 1; mark <= 5; mark++)
+                                    {
+                                        <span aria-hidden="true" class="@(mark <= quote.Rating ? "is-on" : null)">@(mark <= quote.Rating ? "★" : "☆")</span>
+                                    }
+                                </div>
+                                <blockquote>“@quote.Text”</blockquote>
+                                <figcaption>
+                                    <strong>@quote.Name</strong>
+                                    <span>@quote.Service</span>
+                                </figcaption>
+                            </figure>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </section>
+    }
+
+    <section class="visit">
+        <div>
+            <div>
+                <h2>Atölye’ye uğrayın</h2>
+                <p>@_salon.Address</p>
+                <p><a href="@Tel(_salon.Phone)">@_salon.Phone</a> · <a href="@InstagramUrl(_salon.Instagram)">@_salon.Instagram</a></p>
+            </div>
+            <a class="btn ghost" href="salon">Salon hakkında</a>
+        </div>
+    </section>
+}
+
+@code {
+    private IReadOnlyList<SalonService> _services = [];
+    private IReadOnlyList<Employee> _employees = [];
+    private IReadOnlyList<GalleryShot> _gallery = [];
+    private IReadOnlyList<Testimonial> _quotes = [];
+    private SalonProfile _salon = new();
+    private string? _loadError;
+    private bool _ready;
+
+    private static readonly (string Title, string Image, string Href)[] Doors =
+    [
+        ("Saç", "images/services/s11.jpg", "services?kategori=Saç"),
+        ("Renk", "images/services/s17.jpg", "services?kategori=Renk"),
+        ("Sakal", "images/services/s19.jpg", "services?kategori=Sakal")
+    ];
+
+    private IReadOnlyList<SalonService> Featured
+    {
+        get
+        {
+            var popular = _services.Where(service => service.Tag == "Popüler").Take(3).ToList();
+            return popular.Count >= 3 ? popular : _services.Take(3).ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _services = await Data.GetServicesAsync();
+            _employees = await Data.GetEmployeesAsync();
+            _salon = await Content.GetSalonAsync();
+            _gallery = await Content.GetGalleryAsync();
+            _quotes = await Content.GetTestimonialsAsync();
+            _ready = true;
+        }
+        catch (Exception)
+        {
+            _loadError = "Salon bilgileri yüklenemedi. Sayfayı yenileyin.";
+        }
+    }
+
+    private static string Tel(string phone)
+    {
+        var digits = new string((phone ?? "").Where(char.IsDigit).ToArray());
+        return string.IsNullOrEmpty(digits) ? "tel:02882144590" : "tel:" + digits;
+    }
+
+    private static string InstagramUrl(string handle)
+    {
+        var name = (handle ?? "").Trim().TrimStart('@');
+        return string.IsNullOrEmpty(name) ? "https://instagram.com/atolye.kirklareli" : "https://instagram.com/" + name;
+    }
+}

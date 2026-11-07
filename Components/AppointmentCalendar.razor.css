@@ -4,16 +4,45 @@
     color: var(--muted);
 }
 
-.months {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-16);
+.retained-slot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    margin-top: var(--space-8);
+    padding: var(--space-12);
+    background: var(--copper-soft);
+    border-radius: var(--radius-control);
 }
 
-.month h3,
-.times h3 {
-    margin: 0 0 0.7rem;
-    font-size: 1.35rem;
+.retained-slot strong {
+    display: block;
+}
+
+.hint {
+    margin: var(--space-12) 0 0;
+    min-height: 1.5em;
+}
+
+.month-switch {
+    display: flex;
+    gap: var(--space-8);
+    margin-bottom: var(--space-12);
+}
+
+.month-tab {
+    flex: 1;
+    min-height: 44px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+}
+
+.month-tab[aria-pressed="true"] {
+    border-color: var(--copper-dark);
+    background: var(--copper-soft);
+    font-weight: 600;
 }
 
 .week,
@@ -21,6 +50,10 @@
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: var(--space-4);
+}
+
+.days {
+    scroll-margin-top: 5.5rem;
 }
 
 .week {
@@ -32,16 +65,20 @@
 }
 
 .day {
-    aspect-ratio: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0;
     border: 0;
-    border-radius: 12px;
+    border-radius: var(--radius-control);
     background: transparent;
     cursor: pointer;
     font-weight: 600;
+    font-size: 1.05rem;
 }
 
 .day.is-today {
-    box-shadow: inset 0 -3px 0 var(--copper);
+    box-shadow: inset 0 -3px 0 var(--brass);
 }
 
 .day.is-selected {
@@ -52,10 +89,7 @@
 .day:disabled {
     color: var(--muted);
     cursor: not-allowed;
-}
-
-.day.is-empty {
-    display: block;
+    opacity: 0.72;
 }
 
 .times {
@@ -86,7 +120,7 @@
     border: 1px solid var(--line);
 }
 
-.swatch.is-available { background: var(--paper); }
+.swatch.is-available { background: var(--success-soft); border-color: var(--success); }
 .swatch.is-busy { background: var(--warning-soft); border-color: var(--warning); }
 .swatch.is-past { background: transparent; border-style: dashed; }
 
@@ -94,6 +128,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-8);
+    animation: slots-appear var(--motion-medium);
 }
 
 .slot {
@@ -105,10 +140,11 @@
     justify-content: center;
     gap: var(--space-2);
     padding: var(--space-8) var(--space-12);
-    border-radius: var(--space-12);
+    border-radius: var(--radius-control);
     border: 1px solid var(--line);
     background: var(--paper);
     cursor: pointer;
+    transition: background-color var(--motion-fast), border-color var(--motion-fast);
 }
 
 .slot .clock {
@@ -118,11 +154,15 @@
 .slot .tag {
     font-size: 0.78rem;
     letter-spacing: 0.04em;
-    text-transform: uppercase;
+}
+
+.slot.is-available {
+    background: var(--success-soft);
+    border-color: var(--success);
 }
 
 .slot.is-available:hover {
-    border-color: var(--primary);
+    border-color: var(--success-ink);
 }
 
 .slot.is-busy {
@@ -132,11 +172,16 @@
     cursor: not-allowed;
 }
 
+.slot.is-busy .clock {
+    text-decoration: line-through;
+}
+
 .slot.is-past {
     background: transparent;
     color: var(--muted);
     border-style: dashed;
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .slot.is-chosen {
@@ -145,8 +190,7 @@
     color: var(--on-primary);
 }
 
-@media (max-width: 800px) {
-    .months {
-        grid-template-columns: 1fr;
-    }
+@keyframes slots-appear {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
 }

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Ece Nur Kaya",
+    "service": "Balyaj",
+    "text": "Geçiş sert durmadı. Elif rengi gün ışığında da aynı bıraktı, bekleme süresini de baştan söyledi.",
+    "rating": 5
+  },
+  {
+    "name": "Mert Aslan",
+    "service": "Fade kesim",
+    "text": "Ense çizgisi iki hafta düzgün kaldı. Mehmet sakalı da aynı hatta indirdi, ayrı randevuya gerek kalmadı.",
+    "rating": 5
+  },
+  {
+    "name": "Selin Uçar",
+    "service": "Gelin başı",
+    "text": "Provada denediğimiz topuz düğün sabahı birebir oturdu. Selin duvağı saça göre yerleştirdi.",
+    "rating": 5
+  },
+  {
+    "name": "Deniz Aksoy",
+    "service": "Keratin bakım",
+    "text": "Yağmurda dağılan saç bir ay düz durdu. Koku ağır değildi, süre kartta yazdığı gibi bitti.",
+    "rating": 4
+  },
+  {
+    "name": "Ayça Demir",
+    "service": "Protez tırnak",
+    "text": "Ceren tırnak yatağını kısaltmadan uzattı. İki hafta sonra tek tırnak kalktı, ücretsiz yapıştırdı.",
+    "rating": 5
+  },
+  {
+    "name": "Hakan Yıldız",
+    "service": "Ustura tıraşı",
+    "text": "Havlu sıcak, ustura acele etmedi. Tıraş sonrası yanma olmadı.",
+    "rating": 5
+  },
+  {
+    "name": "İpek Sönmez",
+    "service": "Saç bakımı",
+    "text": "Boya sonrası tel kopuyordu. Maske kısa sürdü ama tarak artık takılmıyor.",
+    "rating": 4
+  },
+  {
+    "name": "Burcu Aydın",
+    "service": "Dip boya",
+    "text": "Kök ile uç arasında bant kalmadı. Fiyat kartta neyse o çıktı, sürpriz eklenmedi.",
+    "rating": 5
+  }
+]

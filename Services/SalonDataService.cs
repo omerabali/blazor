@@ -6,10 +6,10 @@ namespace KuaforRandevu.Services;
 public sealed class SalonDataService
 {
     private readonly HttpClient _http;
-    private Task? _load;
+    private Task? _catalogLoad;
+    private Task<IReadOnlyList<BusySlot>>? _busyLoad;
     private IReadOnlyList<SalonService> _services = [];
     private IReadOnlyList<Employee> _employees = [];
-    private IReadOnlyList<BusySlot> _busySlots = [];
 
     public SalonDataService(HttpClient http)
     {
@@ -18,33 +18,43 @@ public sealed class SalonDataService
 
     public async Task<IReadOnlyList<SalonService>> GetServicesAsync()
     {
-        await EnsureLoadedAsync();
+        await EnsureCatalogAsync();
         return _services;
     }
 
     public async Task<IReadOnlyList<Employee>> GetEmployeesAsync()
     {
-        await EnsureLoadedAsync();
+        await EnsureCatalogAsync();
         return _employees;
     }
 
-    public async Task<IReadOnlyList<BusySlot>> GetBusySlotsAsync()
+    public Task<IReadOnlyList<BusySlot>> GetBusySlotsAsync()
     {
-        await EnsureLoadedAsync();
-        return _busySlots;
+        if (_busyLoad is null || _busyLoad.IsFaulted || _busyLoad.IsCanceled)
+            _busyLoad = LoadBusySlotsAsync();
+
+        return _busyLoad;
     }
 
-    private Task EnsureLoadedAsync() => _load ??= LoadAsync();
+    private Task EnsureCatalogAsync()
+    {
+        if (_catalogLoad is null || _catalogLoad.IsFaulted || _catalogLoad.IsCanceled)
+            _catalogLoad = LoadCatalogAsync();
 
-    private async Task LoadAsync()
+        return _catalogLoad;
+    }
+
+    private async Task LoadCatalogAsync()
     {
         var servicesTask = _http.GetFromJsonAsync<List<SalonService>>("data/services.json");
         var employeesTask = _http.GetFromJsonAsync<List<Employee>>("data/employees.json");
-        var busyTask = _http.GetFromJsonAsync<List<BusySlot>>("data/busy-slots.json");
-        await Task.WhenAll(servicesTask, employeesTask, busyTask);
+        await Task.WhenAll(servicesTask, employeesTask);
 
         _services = await servicesTask ?? [];
         _employees = await employeesTask ?? [];
-        _busySlots = await busyTask ?? [];
     }
+
+    private async Task<IReadOnlyList<BusySlot>> LoadBusySlotsAsync()
+        => await _http.GetFromJsonAsync<List<BusySlot>>("data/busy-slots.json")
+           ?? throw new System.Text.Json.JsonException("Dolu saatler okunamadı.");
 }

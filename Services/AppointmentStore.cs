@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using KuaforRandevu.Models;
 using Microsoft.JSInterop;
@@ -8,60 +9,49 @@ public sealed class AppointmentStore : IAsyncDisposable
 {
     private const string StorageKey = "kuafor.appointments";
     private readonly IJSRuntime _js;
+    private readonly AvailabilityService _availability;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private IJSObjectReference? _module;
-    private List<Appointment>? _items;
 
-    public AppointmentStore(IJSRuntime js)
+    public AppointmentStore(IJSRuntime js, AvailabilityService availability)
     {
         _js = js;
+        _availability = availability;
     }
 
     public async Task<IReadOnlyList<Appointment>> GetAllAsync()
     {
-        if (_items is not null)
-            return _items;
-
-        try
-        {
-            var raw = await (await ModuleAsync()).InvokeAsync<string?>("getItem", StorageKey);
-            _items = string.IsNullOrWhiteSpace(raw)
-                ? []
-                : JsonSerializer.Deserialize<List<Appointment>>(raw, _json) ?? [];
-        }
-        catch (Exception ex) when (ex is JSException or JsonException)
-        {
-            _items = [];
-        }
-
-        return _items;
+        var raw = await (await ModuleAsync()).InvokeAsync<string?>("getItem", StorageKey);
+        return Deserialize(raw);
     }
 
-    public async Task AddAsync(Appointment appointment)
+    public Task<(bool Changed, IReadOnlyList<Appointment> Appointments)> TryAddAsync(
+        Appointment appointment, IReadOnlyList<BusySlot> busySlots) => UpdateAsync(items =>
     {
-        var items = await MutableAsync();
+        var start = appointment.StartAt;
+        var duration = (int)(appointment.EndAt - start).TotalMinutes;
+        if (!_availability.IsSelectable(DateOnly.FromDateTime(start), TimeOnly.FromDateTime(start),
+                duration, appointment.EmployeeId, busySlots, items))
+            return false;
+
+        appointment.Id = CreateCode(start, items);
         items.Add(appointment);
-        await PersistAsync();
-    }
+        return true;
+    });
 
-    public async Task<bool> CancelAsync(string id)
+    public Task<(bool Changed, IReadOnlyList<Appointment> Appointments)> CancelAsync(string id) => UpdateAsync(items =>
     {
-        var items = await MutableAsync();
         var item = items.FirstOrDefault(appointment => appointment.Id == id);
         if (item is null || item.IsCancelled || item.StartAt <= DateTime.Now)
             return false;
 
         item.IsCancelled = true;
-        await PersistAsync();
         return true;
-    }
+    });
 
-    public string CreateCode(DateTime when)
+    private static string CreateCode(DateTime when, IEnumerable<Appointment> items)
     {
-        if (_items is null)
-            throw new InvalidOperationException("Randevular yüklenmeden kod üretilemez.");
-
-        var used = _items.Select(appointment => appointment.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var used = items.Select(appointment => appointment.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var year = when.Year;
         for (var attempt = 0; attempt < 40; attempt++)
         {
@@ -70,7 +60,10 @@ public sealed class AppointmentStore : IAsyncDisposable
                 return code;
         }
 
-        return $"KFR-{year}-{Random.Shared.Next(1000, 10000)}";
+        var suffix = 1000;
+        while (used.Contains($"KFR-{year}-{suffix}"))
+            suffix++;
+        return $"KFR-{year}-{suffix}";
     }
 
     public async ValueTask DisposeAsync()
@@ -82,18 +75,42 @@ public sealed class AppointmentStore : IAsyncDisposable
         _module = null;
     }
 
-    private async Task<List<Appointment>> MutableAsync()
+    private List<Appointment> Deserialize(string? raw)
     {
-        await GetAllAsync();
-        return _items!;
+        if (raw is null)
+            return [];
+
+        var items = JsonSerializer.Deserialize<List<Appointment>>(raw, _json);
+        if (items is null || items.Any(item => item is null || item.ServiceIds is null))
+            throw new JsonException("Saklanan randevular okunamadı.");
+
+        return items;
     }
 
-    private async Task PersistAsync()
+    private async Task<(bool Changed, IReadOnlyList<Appointment> Appointments)> UpdateAsync(
+        Func<List<Appointment>, bool> update)
     {
-        var json = JsonSerializer.Serialize(_items, _json);
-        await (await ModuleAsync()).InvokeVoidAsync("setItem", StorageKey, json);
+        List<Appointment> items = [];
+        using var callback = DotNetObjectReference.Create(new StorageUpdate(raw =>
+        {
+            items = Deserialize(raw);
+            return update(items) ? JsonSerializer.Serialize(items, _json) : null;
+        }));
+        var changed = await (await ModuleAsync()).InvokeAsync<bool>("updateItem", StorageKey, callback);
+        return (changed, items);
     }
 
     private async Task<IJSObjectReference> ModuleAsync()
         => _module ??= await _js.InvokeAsync<IJSObjectReference>("import", "./js/storage.js");
+
+    private sealed class StorageUpdate
+    {
+        private readonly Func<string?, string?> _apply;
+
+        [DynamicDependency(nameof(Apply))]
+        public StorageUpdate(Func<string?, string?> apply) => _apply = apply;
+
+        [JSInvokable]
+        public string? Apply(string? raw) => _apply(raw);
+    }
 }

@@ -1,0 +1,15 @@
+<ul class="gallery">
+    @foreach (var shot in Shots)
+    {
+        <li @key="shot.Image">
+            <figure>
+                <img src="@shot.Image" alt="@shot.Alt" loading="lazy" />
+                <figcaption>@shot.Caption</figcaption>
+            </figure>
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter, EditorRequired] public IEnumerable<GalleryShot> Shots { get; set; } = [];
+}

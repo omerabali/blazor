@@ -1,10 +1,13 @@
 @page "/services"
 @inject SalonDataService Data
 @inject BookingStateService Booking
+@inject IJSRuntime JS
+@inject NavigationManager Nav
 @implements IDisposable
 
 <PageTitle>Hizmetler</PageTitle>
 
+<div class="page @(Chosen.Count > 0 ? "has-dock" : null)">
 @if (_loadError is not null)
 {
     <p class="banner" role="alert">@_loadError</p>
@@ -17,32 +20,104 @@ else
 {
     <header class="page-head">
         <p class="eyebrow">Hizmetler</p>
-        <h1>Ne yaptırmak istersiniz?</h1>
-        <p>Bir veya daha fazla hizmet seçin. Süre ve ücret anında toplanır.</p>
+        <h1 @ref="_heading" tabindex="-1">Ne yaptırmak istersiniz?</h1>
+        <p>Bir veya daha fazla hizmet seçin. Süre ve ücret anında toplanır. Çalışan, seçilenlerin tümünü verebilen kişiler arasından gelir.</p>
     </header>
 
-    <ServiceSelector Services="_services" SelectedIds="Booking.SelectedServiceIds" OnToggle="Toggle" />
-
-    <div class="dock" aria-live="polite">
-        <p>
-            <strong>@Chosen.Count</strong> hizmet
-            <span>@SalonFormat.Duration(TotalMinutes)</span>
-            <span>@SalonFormat.Money(TotalPrice)</span>
-        </p>
-        @if (Chosen.Count == 0)
+    <div class="filters" role="group" aria-label="Hizmet kategorileri">
+        @foreach (var category in Categories)
         {
-            <button class="btn" type="button" disabled>Devam</button>
+            var current = category;
+            var on = _category == current;
+            <button type="button" class="chip @(on ? "is-on" : null)" aria-pressed="@(on ? "true" : "false")" @onclick="() => SelectCategory(current)">@current</button>
         }
-        else
+    </div>
+
+    <ServiceSelector Services="Visible" SelectedIds="Booking.SelectedServiceIds" OnToggle="Toggle" OnInspect="Open" />
+
+    <div class="dock @(Chosen.Count == 0 ? "is-empty" : null)">
+        <div class="dock-copy">
+            @if (Chosen.Count > 0)
+            {
+                <details class="selection-picker">
+                    <summary @ref="_selectionSummary">Seçtiklerim <span>(@Chosen.Count)</span></summary>
+                    <ul class="selection-list" aria-label="Seçili hizmetler">
+                        @foreach (var service in Chosen)
+                        {
+                            <li @key="service.Id">
+                                <span>@service.Name</span>
+                                <button type="button" class="remove-service" aria-label="@($"{service.Name} seçimini kaldır")"
+                                        @onclick="() => RemoveFromSelectionAsync(service.Id)">Çıkar</button>
+                            </li>
+                        }
+                    </ul>
+                </details>
+            }
+            <p role="status">
+                @if (Chosen.Count > 0)
+                {
+                    @($"{SalonFormat.Duration(TotalMinutes)} · {SalonFormat.Money(TotalPrice)}")
+                }
+            </p>
+        </div>
+        @if (Chosen.Count > 0)
         {
-            <a class="btn" href="appointments/new">Devam</a>
+            <a class="btn" href="appointments/new">Çalışan seç</a>
         }
     </div>
 }
+</div>
+
+<dialog @ref="_dialog" class="inspect" aria-labelledby="inspect-title">
+    @if (_inspect is { } inspected)
+    {
+        <div class="sheet">
+            @if (!string.IsNullOrWhiteSpace(inspected.Image))
+            {
+                <img src="@inspected.Image" alt="" />
+            }
+            <div class="sheet-copy">
+                <p class="eyebrow">@inspected.Category</p>
+                <h2 id="inspect-title">@inspected.Name</h2>
+                @if (!string.IsNullOrWhiteSpace(inspected.Description))
+                {
+                    <p>@inspected.Description</p>
+                }
+                <p class="sheet-meta">@SalonFormat.Duration(inspected.DurationMinutes) · @SalonFormat.Money(inspected.Price)</p>
+                <p class="sheet-staff">@StaffLine(inspected)</p>
+                <form class="sheet-actions" method="dialog">
+                    <button class="btn" type="button" @onclick="() => Toggle(inspected.Id)">@(Booking.SelectedServiceIds.Contains(inspected.Id) ? "Hizmeti çıkar" : "Hizmeti ekle")</button>
+                    <button class="btn ghost" type="submit" autofocus>Kapat</button>
+                </form>
+            </div>
+        </div>
+    }
+</dialog>
 
 @code {
+    private static readonly string[] Categories = ["Tümü", "Saç", "Renk", "Bakım", "Sakal", "El ve cilt"];
+
     private IReadOnlyList<SalonService>? _services;
+    private IReadOnlyList<Employee> _employees = [];
+    private string _category = "Tümü";
     private string? _loadError;
+    private SalonService? _inspect;
+    private string? _appliedServiceQuery;
+    private bool _openDialog;
+    private ElementReference _dialog;
+    private ElementReference _heading;
+    private ElementReference _selectionSummary;
+
+    [SupplyParameterFromQuery(Name = "kategori")]
+    public string? Kategori { get; set; }
+
+    [SupplyParameterFromQuery(Name = "hizmet")]
+    public string? Hizmet { get; set; }
+
+    private IReadOnlyList<SalonService> Visible =>
+        _category == "Tümü"
+            ? _services ?? []
+            : (_services ?? []).Where(service => service.Category == _category).ToList();
 
     private IReadOnlyList<SalonService> Chosen =>
         (_services ?? []).Where(service => Booking.SelectedServiceIds.Contains(service.Id)).ToList();
@@ -56,6 +131,8 @@ else
         try
         {
             _services = await Data.GetServicesAsync();
+            _employees = await Data.GetEmployeesAsync();
+            ApplyQuery();
         }
         catch (Exception)
         {
@@ -63,7 +140,56 @@ else
         }
     }
 
+    protected override void OnParametersSet() => ApplyQuery();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_openDialog)
+            return;
+
+        _openDialog = false;
+        await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/dialog.js");
+        await module.InvokeVoidAsync("show", _dialog, _heading);
+    }
+
+    private void ApplyQuery()
+    {
+        _category = Kategori is not null && Categories.Contains(Kategori) ? Kategori : "Tümü";
+
+        if (_services is null || _appliedServiceQuery == Hizmet)
+            return;
+
+        _appliedServiceQuery = Hizmet;
+        if (_services.FirstOrDefault(service => service.Id == Hizmet) is { } service)
+            Open(service);
+    }
+
     private void Toggle(string id) => Booking.ToggleService(id);
+
+    private void SelectCategory(string category)
+        => Nav.NavigateTo(category == "Tümü" ? "services" : $"services?kategori={Uri.EscapeDataString(category)}", replace: true);
+
+    private async Task RemoveFromSelectionAsync(string id)
+    {
+        var last = Chosen.Count == 1;
+        Toggle(id);
+        await (last ? _heading : _selectionSummary).FocusAsync(preventScroll: !last);
+    }
+
+    private void Open(SalonService service)
+    {
+        _inspect = service;
+        _openDialog = true;
+    }
+
+    private string StaffLine(SalonService service)
+    {
+        var names = _employees
+            .Where(employee => employee.ServiceIds.Contains(service.Id))
+            .Select(employee => employee.FullName);
+        var line = string.Join(", ", names);
+        return string.IsNullOrWhiteSpace(line) ? "Bu iş için uygun çalışan listesi randevuda süzülür." : line;
+    }
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 

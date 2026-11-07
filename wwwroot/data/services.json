@@ -5,7 +5,9 @@
     "category": "Saç",
     "description": "Yıkama sonrası form kesimi ve uç temizliği.",
     "durationMinutes": 30,
-    "price": 450
+    "price": 450,
+    "image": "images/services/s01.jpg",
+    "tag": "Popüler"
   },
   {
     "id": "S02",
@@ -13,7 +15,9 @@
     "category": "Saç",
     "description": "Fırça ile hacim ve günlük şekillendirme.",
     "durationMinutes": 30,
-    "price": 250
+    "price": 250,
+    "image": "images/services/s02.jpg",
+    "tag": ""
   },
   {
     "id": "S11",
@@ -21,7 +25,9 @@
     "category": "Saç",
     "description": "Özel gün için toplama ve sabitleme.",
     "durationMinutes": 60,
-    "price": 650
+    "price": 650,
+    "image": "images/services/s11.jpg",
+    "tag": ""
   },
   {
     "id": "S12",
@@ -29,7 +35,9 @@
     "category": "Saç",
     "description": "Kalıcı dalga ve sonrasında şekillendirme.",
     "durationMinutes": 120,
-    "price": 1600
+    "price": 1600,
+    "image": "images/services/s12.jpg",
+    "tag": ""
   },
   {
     "id": "S03",
@@ -37,7 +45,9 @@
     "category": "Renk",
     "description": "Tek renk boya, dip kapatma dahil.",
     "durationMinutes": 90,
-    "price": 1400
+    "price": 1400,
+    "image": "images/services/s03.jpg",
+    "tag": "Popüler"
   },
   {
     "id": "S04",
@@ -45,7 +55,9 @@
     "category": "Renk",
     "description": "İnce tutamlara açık renk uygulaması.",
     "durationMinutes": 120,
-    "price": 1700
+    "price": 1700,
+    "image": "images/services/s04.jpg",
+    "tag": ""
   },
   {
     "id": "S05",
@@ -53,7 +65,9 @@
     "category": "Renk",
     "description": "Serbest el ile dipte koyu, uçta açık geçiş.",
     "durationMinutes": 150,
-    "price": 2100
+    "price": 2100,
+    "image": "images/services/s05.jpg",
+    "tag": "Popüler"
   },
   {
     "id": "S06",
@@ -61,7 +75,9 @@
     "category": "Bakım",
     "description": "Isı ile uygulanan düzleştirici bakım.",
     "durationMinutes": 60,
-    "price": 950
+    "price": 950,
+    "image": "images/services/s06.jpg",
+    "tag": ""
   },
   {
     "id": "S07",
@@ -69,7 +85,9 @@
     "category": "Bakım",
     "description": "Nem maskesi, bekletme ve durulama.",
     "durationMinutes": 45,
-    "price": 500
+    "price": 500,
+    "image": "images/services/s07.jpg",
+    "tag": ""
   },
   {
     "id": "S08",
@@ -77,7 +95,9 @@
     "category": "Sakal",
     "description": "Sakal hattı, tıraş ve nemlendirici.",
     "durationMinutes": 30,
-    "price": 250
+    "price": 250,
+    "image": "images/services/s08.jpg",
+    "tag": "Popüler"
   },
   {
     "id": "S09",
@@ -85,7 +105,9 @@
     "category": "El ve cilt",
     "description": "Tırnak şekli, et temizliği ve bakım.",
     "durationMinutes": 45,
-    "price": 400
+    "price": 400,
+    "image": "images/services/s09.jpg",
+    "tag": ""
   },
   {
     "id": "S10",
@@ -93,7 +115,9 @@
     "category": "El ve cilt",
     "description": "Yüz temizliği, peeling ve nemlendirme.",
     "durationMinutes": 60,
-    "price": 750
+    "price": 750,
+    "image": "images/services/s10.jpg",
+    "tag": ""
   },
   {
     "id": "S13",
@@ -101,7 +125,9 @@
     "category": "Saç",
     "description": "12 yaş altı için kısa ve pratik kesim.",
     "durationMinutes": 30,
-    "price": 300
+    "price": 300,
+    "image": "images/services/s13.jpg",
+    "tag": ""
   },
   {
     "id": "S14",
@@ -109,7 +135,9 @@
     "category": "Saç",
     "description": "Maşa ve fön ile kalıcı görünümlü dalga.",
     "durationMinutes": 45,
-    "price": 400
+    "price": 400,
+    "image": "images/services/s14.jpg",
+    "tag": ""
   },
   {
     "id": "S15",
@@ -117,7 +145,9 @@
     "category": "Saç",
     "description": "Prova sonrası gelin topuzu ve aksesuar yerleşimi.",
     "durationMinutes": 120,
-    "price": 2500
+    "price": 2500,
+    "image": "images/services/s15.jpg",
+    "tag": "Popüler"
   },
   {
     "id": "S16",
@@ -125,7 +155,9 @@
     "category": "Renk",
     "description": "Dipten uca yumuşak renk geçişi.",
     "durationMinutes": 150,
-    "price": 2200
+    "price": 2200,
+    "image": "images/services/s16.jpg",
+    "tag": ""
   },
   {
     "id": "S17",
@@ -133,7 +165,9 @@
     "category": "Renk",
     "description": "Uzayan diplerin mevcut renge göre kapatılması.",
     "durationMinutes": 60,
-    "price": 900
+    "price": 900,
+    "image": "images/services/s17.jpg",
+    "tag": ""
   },
   {
     "id": "S18",
@@ -141,7 +175,9 @@
     "category": "Bakım",
     "description": "Boya sonrası yıpranan saç için onarıcı kür.",
     "durationMinutes": 45,
-    "price": 800
+    "price": 800,
+    "image": "images/services/s18.jpg",
+    "tag": ""
   },
   {
     "id": "S19",
@@ -149,7 +185,9 @@
     "category": "Sakal",
     "description": "Makine ile sakal formu ve kenar düzeltme.",
     "durationMinutes": 30,
-    "price": 200
+    "price": 200,
+    "image": "images/services/s19.jpg",
+    "tag": ""
   },
   {
     "id": "S20",
@@ -157,7 +195,9 @@
     "category": "El ve cilt",
     "description": "Ayak bakımı, tırnak şekli ve nemlendirme.",
     "durationMinutes": 60,
-    "price": 550
+    "price": 550,
+    "image": "images/services/s20.jpg",
+    "tag": ""
   },
   {
     "id": "S21",
@@ -165,6 +205,158 @@
     "category": "El ve cilt",
     "description": "İp veya cımbız ile kaş şekillendirme.",
     "durationMinutes": 30,
-    "price": 200
+    "price": 200,
+    "image": "images/services/s21.jpg",
+    "tag": ""
+  },
+  {
+    "id": "S22",
+    "name": "Fade Kesim",
+    "category": "Saç",
+    "description": "Ense ve yanlarda kademeli geçiş, üstte istenen boy.",
+    "durationMinutes": 30,
+    "price": 400,
+    "image": "images/services/s22.jpg",
+    "tag": "Yeni"
+  },
+  {
+    "id": "S23",
+    "name": "Klasik Ustura Tıraşı",
+    "category": "Sakal",
+    "description": "Sıcak havlu, ustura ve bakım yağı ile tıraş.",
+    "durationMinutes": 45,
+    "price": 450,
+    "image": "images/services/s23.jpg",
+    "tag": "Popüler"
+  },
+  {
+    "id": "S24",
+    "name": "Kesim + Sakal Paketi",
+    "category": "Sakal",
+    "description": "Saç kesimi ve sakal hattı aynı koltukta, ara vermeden.",
+    "durationMinutes": 60,
+    "price": 600,
+    "image": "images/services/s24.jpg",
+    "tag": "Paket"
+  },
+  {
+    "id": "S25",
+    "name": "Saç Uzatma",
+    "category": "Saç",
+    "description": "Çıt çıt veya kaynak ile boy ve hacim.",
+    "durationMinutes": 150,
+    "price": 3500,
+    "image": "images/services/s25.jpg",
+    "tag": "Yeni"
+  },
+  {
+    "id": "S26",
+    "name": "Kirpik Lifting",
+    "category": "El ve cilt",
+    "description": "Kirpikleri kıvıran ve besleyen uygulama.",
+    "durationMinutes": 60,
+    "price": 700,
+    "image": "images/services/s26.jpg",
+    "tag": "Yeni"
+  },
+  {
+    "id": "S27",
+    "name": "Protez Tırnak",
+    "category": "El ve cilt",
+    "description": "Jel veya akrilik uzatma, şekil ve renk.",
+    "durationMinutes": 90,
+    "price": 1200,
+    "image": "images/services/s27.jpg",
+    "tag": "Popüler"
+  },
+  {
+    "id": "S28",
+    "name": "Kaş Laminasyon",
+    "category": "El ve cilt",
+    "description": "Kaşları yukarı sabitleyen ve dolgun gösteren işlem.",
+    "durationMinutes": 45,
+    "price": 550,
+    "image": "images/services/s28.jpg",
+    "tag": "Yeni"
+  },
+  {
+    "id": "S29",
+    "name": "Bebek Kesimi",
+    "category": "Saç",
+    "description": "İlk kesim ve kısa tutulan bebek saçı için sakin tempo.",
+    "durationMinutes": 30,
+    "price": 250,
+    "image": "images/services/s29.jpg",
+    "tag": ""
+  },
+  {
+    "id": "S30",
+    "name": "Saç Botoksu",
+    "category": "Bakım",
+    "description": "Yıpranmış teli dolduran, parlaklık veren bakım.",
+    "durationMinutes": 90,
+    "price": 1400,
+    "image": "images/services/s30.jpg",
+    "tag": "Popüler"
+  },
+  {
+    "id": "S31",
+    "name": "Tonlama",
+    "category": "Renk",
+    "description": "Sarılaşan sarıları veya bakırı istenen tona çeker.",
+    "durationMinutes": 45,
+    "price": 650,
+    "image": "images/services/s31.jpg",
+    "tag": ""
+  },
+  {
+    "id": "S32",
+    "name": "Erkek Saç Boyama",
+    "category": "Renk",
+    "description": "Ak kapatma veya kısa saçta tek ton boya.",
+    "durationMinutes": 45,
+    "price": 500,
+    "image": "images/services/s32.jpg",
+    "tag": ""
+  },
+  {
+    "id": "S33",
+    "name": "Kaş Boyama",
+    "category": "El ve cilt",
+    "description": "Kaş rengine uygun, kısa süreli boya.",
+    "durationMinutes": 30,
+    "price": 200,
+    "image": "images/services/s33.jpg",
+    "tag": ""
+  },
+  {
+    "id": "S34",
+    "name": "El ve Ayak Paketi",
+    "category": "El ve cilt",
+    "description": "Manikür ve pedikür aynı randevuda.",
+    "durationMinutes": 90,
+    "price": 850,
+    "image": "images/services/s34.jpg",
+    "tag": "Paket"
+  },
+  {
+    "id": "S35",
+    "name": "Sakal Boyama",
+    "category": "Sakal",
+    "description": "Ak sakalı kapatan veya ton eşitleyen boya.",
+    "durationMinutes": 30,
+    "price": 300,
+    "image": "images/services/s35.jpg",
+    "tag": ""
+  },
+  {
+    "id": "S36",
+    "name": "Gelin Prova",
+    "category": "Saç",
+    "description": "Düğünden önce topuz, dağınık toplama ve duvak denemesi.",
+    "durationMinutes": 90,
+    "price": 1500,
+    "image": "images/services/s36.jpg",
+    "tag": "Paket"
   }
 ]

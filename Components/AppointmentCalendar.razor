@@ -1,78 +1,75 @@
 <div class="calendar">
     <p class="hours">Salon 09:00–19:00 açıktır. Başlangıçlar 30 dakikada birdir ve bitiş 19:00’ı geçemez.</p>
-    <div class="months">
-        @foreach (var month in Months)
+    <div class="month-switch" role="group" aria-label="Takvim ayı">
+        @for (var index = 0; index < 2; index++)
         {
-            <section class="month" aria-label="@SalonFormat.Month(month)">
-                <h3>@SalonFormat.Month(month)</h3>
-                <div class="week" aria-hidden="true">
-                    @foreach (var name in Weekdays)
-                    {
-                        <span>@name</span>
-                    }
-                </div>
-                <div class="days" role="radiogroup" aria-label="@SalonFormat.Month(month)">
-                    @foreach (var cell in Cells(month))
-                    {
-                        if (cell is null)
-                        {
-                            <span class="day is-empty"></span>
-                        }
-                        else
-                        {
-                            var date = cell.Value;
-                            var selected = SelectedDate == date;
-                            <button type="button"
-                                    class="day @(selected ? "is-selected" : null) @(date == Today ? "is-today" : null)"
-                                    disabled="@IsPast(date)"
-                                    aria-pressed="@selected"
-                                    aria-label="@SalonFormat.Date(date)"
-                                    @onclick="() => PickDay(date)">
-                                @date.Day
-                            </button>
-                        }
-                    }
-                </div>
-            </section>
+            var monthIndex = index;
+            var active = _monthIndex == monthIndex;
+            <button type="button" class="month-tab" aria-pressed="@(active ? "true" : "false")"
+                    disabled="@Disabled" @onclick="() => _monthIndex = monthIndex">@SalonFormat.Month(FirstMonth.AddMonths(index))</button>
         }
     </div>
 
-    @if (SelectedDate is not null && ShowSlots)
+    <div class="week" aria-hidden="true">
+        @foreach (var name in Weekdays)
+        {
+            <span>@name</span>
+        }
+    </div>
+    <div @ref="_days" class="days" role="group" aria-label="@SalonFormat.Month(CurrentMonth)" tabindex="-1">
+        @foreach (var cell in Cells(CurrentMonth))
+        {
+            if (cell is not { } date)
+            {
+                <span aria-hidden="true"></span>
+                continue;
+            }
+
+            var selected = SelectedDate == date;
+            <button @key="date" type="button"
+                    class="day @(selected ? "is-selected" : null) @(date == Today ? "is-today" : null)"
+                    disabled="@(Disabled || IsPast(date))"
+                    aria-current="@(date == Today ? "date" : null)"
+                    aria-pressed="@(selected ? "true" : "false")"
+                    aria-label="@SalonFormat.Date(date)"
+                    @onclick="() => PickDay(date)">
+                @date.Day
+            </button>
+        }
+    </div>
+
+    <p class="hint" role="status">@StatusHint</p>
+    @if (!ShowCurrentSlots && SelectedDate is { } chosenDate && SelectedStart is { } chosenTime)
     {
-        <div class="times">
-            <h3>@SalonFormat.Date(SelectedDate.Value)</h3>
-            @if (!string.IsNullOrWhiteSpace(SlotHint))
-            {
-                <p class="hint" role="status">@SlotHint</p>
-            }
-            @if (Slots.Count > 0)
-            {
-                <ul class="legend">
-                    <li><span class="swatch is-available"></span> Uygun</li>
-                    <li><span class="swatch is-busy"></span> Dolu</li>
-                    <li><span class="swatch is-past"></span> Geçti</li>
-                </ul>
-                <div class="slots" role="radiogroup" aria-label="Saatler">
-                    @foreach (var slot in Slots)
-                    {
-                        var start = slot.Start;
-                        var chosen = SelectedStart == start && slot.IsSelectable;
-                        <button type="button"
-                                class="slot @StateClass(slot.State) @(chosen ? "is-chosen" : null)"
-                                disabled="@(!slot.IsSelectable)"
-                                aria-pressed="@chosen"
-                                @onclick="() => PickSlot(start, slot.IsSelectable)">
-                            <span class="clock">@SalonFormat.Clock(start)</span>
-                            <span class="tag">@slot.StatusText</span>
-                        </button>
-                    }
-                </div>
-            }
+        <div class="retained-slot">
+            <span>Seçili randevu <strong>@SalonFormat.Date(chosenDate), @SalonFormat.Clock(chosenTime)</strong></span>
+            <button class="btn ghost" type="button" disabled="@Disabled" @onclick="JumpToSelection">Seçili güne dön</button>
         </div>
     }
-    else
+    @if (ShowCurrentSlots && Slots.Count > 0)
     {
-        <p class="hint" role="status">@(string.IsNullOrWhiteSpace(SlotHint) ? "Bir gün seçin." : SlotHint)</p>
+        <div class="times">
+            <ul class="legend">
+                <li><span class="swatch is-available"></span> Uygun</li>
+                <li><span class="swatch is-busy"></span> Dolu</li>
+                <li><span class="swatch is-past"></span> Geçti</li>
+            </ul>
+            <div @key="SelectedDate" class="slots" role="group" aria-label="Başlangıç saatleri">
+                @foreach (var slot in Slots)
+                {
+                    var start = slot.Start;
+                    var chosen = SelectedStart == start && slot.IsSelectable;
+                    <button type="button"
+                            class="slot @StateClass(slot.State) @(chosen ? "is-chosen" : null)"
+                            disabled="@(Disabled || !slot.IsSelectable)"
+                            aria-pressed="@(chosen ? "true" : "false")"
+                            @onclick="() => PickSlot(start, slot.IsSelectable)">
+                        <span class="clock">@SalonFormat.Clock(start)</span>
+                        <span class="tag">@(chosen ? "Seçili" : slot.StatusText)</span>
+                    </button>
+                }
+            </div>
+        </div>
     }
 </div>
 
@@ -85,18 +82,42 @@
     [Parameter] public EventCallback<TimeOnly> OnTimeSelected { get; set; }
     [Parameter] public IReadOnlyList<TimeSlotOption> Slots { get; set; } = [];
     [Parameter] public bool ShowSlots { get; set; }
+    [Parameter] public bool Disabled { get; set; }
     [Parameter] public string? SlotHint { get; set; }
 
+    private int _monthIndex;
+    private bool _focusDays;
+    private ElementReference _days;
     private DateOnly Today => DateOnly.FromDateTime(DateTime.Now);
-    private IEnumerable<DateOnly> Months
+    private DateOnly FirstMonth => new(Today.Year, Today.Month, 1);
+    private DateOnly CurrentMonth => FirstMonth.AddMonths(_monthIndex);
+    private bool ShowCurrentSlots => ShowSlots && SelectedDate is { } date &&
+        date.Year == CurrentMonth.Year && date.Month == CurrentMonth.Month;
+
+    private string? StatusHint => ShowCurrentSlots && SelectedDate is { } date
+        ? $"{SalonFormat.Date(date)}. {SlotHint}"
+        : ShowSlots ? "Saatleri görmek için bu aydan bir gün seçin." : SlotHint;
+
+    protected override void OnInitialized()
+        => ReturnToSelection();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        get
-        {
-            var first = new DateOnly(Today.Year, Today.Month, 1);
-            yield return first;
-            yield return first.AddMonths(1);
-        }
+        if (!_focusDays)
+            return;
+
+        _focusDays = false;
+        await _days.FocusAsync();
     }
+
+    private void JumpToSelection()
+    {
+        ReturnToSelection();
+        _focusDays = true;
+    }
+
+    private void ReturnToSelection()
+        => _monthIndex = SelectedDate is { } date && date >= FirstMonth.AddMonths(1) ? 1 : 0;
 
     private static IEnumerable<DateOnly?> Cells(DateOnly month)
     {
@@ -114,14 +135,14 @@
 
     private Task PickDay(DateOnly date)
     {
-        if (IsPast(date))
+        if (Disabled || IsPast(date))
             return Task.CompletedTask;
         return OnDateSelected.InvokeAsync(date);
     }
 
     private Task PickSlot(TimeOnly start, bool selectable)
     {
-        if (!selectable)
+        if (Disabled || !selectable)
             return Task.CompletedTask;
         return OnTimeSelected.InvokeAsync(start);
     }

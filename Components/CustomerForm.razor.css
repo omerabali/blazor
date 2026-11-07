@@ -4,6 +4,16 @@
     margin-bottom: var(--space-16);
 }
 
+@media (min-width: 720px) {
+    .fields {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .field-wide {
+        grid-column: 1 / -1;
+    }
+}
+
 .field {
     display: flex;
     flex-direction: column;
@@ -16,14 +26,21 @@ label {
 
 ::deep input {
     width: 100%;
-    padding: var(--space-12) var(--space-16);
-    border-radius: var(--space-12);
+    padding: 0.9rem var(--space-16);
+    border-radius: var(--radius-control);
     border: 1px solid var(--line);
     background: var(--paper);
 }
 
-::deep input.invalid {
+::deep input:focus {
+    outline: 2px solid var(--focus);
+    border-color: var(--focus);
+}
+
+::deep input.invalid,
+::deep input.invalid:focus {
     border-color: var(--warn);
+    outline-color: var(--warn);
 }
 
 ::deep .validation-message {
@@ -31,14 +48,32 @@ label {
     font-size: 0.92rem;
 }
 
-.field ::deep .validation-message ~ .validation-message {
+.field-message {
+    min-block-size: 3em;
+    font-size: 0.875rem;
+}
+
+.field-message ::deep .validation-message ~ .validation-message {
     display: none;
+}
+
+.field-hint {
+    color: var(--muted);
+    font-size: 0.875rem;
 }
 
 .form-error {
     margin: 0 0 var(--space-12);
     color: var(--warn);
     font-weight: 700;
+}
+
+.confirmation {
+    margin: 0 0 var(--space-8);
+}
+
+.confirmation strong {
+    display: block;
 }
 
 button {

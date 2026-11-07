@@ -1,0 +1,92 @@
+@page "/salon"
+@inject SalonContentService Content
+
+<PageTitle>Salon</PageTitle>
+
+<div class="page">
+    @if (_loadError is not null)
+    {
+        <p class="banner" role="alert">@_loadError</p>
+    }
+    else if (!_ready)
+    {
+        <p class="status">Salon yükleniyor…</p>
+    }
+    else
+    {
+        <header class="page-head">
+            <p class="eyebrow">Salon · @_salon.Founded</p>
+            <h1>Acele ettirmeyen bir atölye.</h1>
+            <p>@_salon.Story</p>
+        </header>
+
+        <dl class="facts">
+            <div>
+                <dt>Saat</dt>
+                <dd>09:00 – 19:00</dd>
+            </div>
+            <div>
+                <dt>Adres</dt>
+                <dd>Cumhuriyet Cad. No: 18, Yayla</dd>
+            </div>
+            <div>
+                <dt>Telefon</dt>
+                <dd><a href="@Tel">@_salon.Phone</a></dd>
+            </div>
+            <div>
+                <dt>Instagram</dt>
+                <dd><a href="@Instagram">@_salon.Instagram</a></dd>
+            </div>
+        </dl>
+
+        <section class="gallery-section" aria-labelledby="gallery-heading">
+            <h2 id="gallery-heading">Atölyeden kareler</h2>
+            <SalonGallery Shots="_gallery" />
+        </section>
+
+        <section class="faq">
+            <h2>Sık sorulanlar</h2>
+            @foreach (var item in _salon.Faqs)
+            {
+                <details>
+                    <summary>@item.Question</summary>
+                    <p>@item.Answer</p>
+                </details>
+            }
+        </section>
+
+        <a class="btn" href="services">Hizmet seç</a>
+    }
+</div>
+
+@code {
+    private SalonProfile _salon = new();
+    private IReadOnlyList<GalleryShot> _gallery = [];
+    private string? _loadError;
+    private bool _ready;
+
+    private string Tel => "tel:" + new string((_salon.Phone ?? "02882144590").Where(char.IsDigit).ToArray());
+
+    private string Instagram
+    {
+        get
+        {
+            var name = (_salon.Instagram ?? "@atolye.kirklareli").Trim().TrimStart('@');
+            return "https://instagram.com/" + name;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _salon = await Content.GetSalonAsync();
+            _gallery = await Content.GetGalleryAsync();
+            _ready = true;
+        }
+        catch (Exception)
+        {
+            _loadError = "Salon sayfası yüklenemedi. Sayfayı yenileyin.";
+        }
+    }
+}

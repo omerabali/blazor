@@ -1,0 +1,127 @@
+@page "/ekip"
+@inject SalonDataService Data
+@inject IJSRuntime JS
+
+<PageTitle>Ekip</PageTitle>
+
+<div class="page">
+    @if (_loadError is not null)
+    {
+        <p class="banner" role="alert">@_loadError</p>
+    }
+    else if (!_ready)
+    {
+        <p class="status">Ekip yükleniyor…</p>
+    }
+    else
+    {
+        <header class="page-head">
+            <p class="eyebrow">Ekip</p>
+            <h1 @ref="_heading" tabindex="-1">Atölye ekibi</h1>
+            <p>Uzmanlık alanlarını ve sundukları hizmetleri görmek için bir ekip üyesinin profiline bakın.</p>
+        </header>
+
+        <ul class="grid">
+            @foreach (var employee in _employees)
+            {
+                var id = employee.Id;
+                <li @key="id">
+                    <button type="button" class="person person-card" aria-haspopup="dialog" @onclick="() => ShowProfile(employee)">
+                        <Portrait Src="@employee.Image" Name="@employee.FullName" />
+                        <span class="person-copy">
+                            <strong>@employee.FullName</strong>
+                            <span>@employee.Title@(employee.Years > 0 ? $" · {employee.Years} yıl" : "")</span>
+                        </span>
+                    </button>
+                </li>
+            }
+        </ul>
+
+    }
+</div>
+
+<dialog @ref="_dialog" class="profile" aria-labelledby="profile-title">
+    @if (_profile is { } person)
+    {
+        <div class="detail">
+            <div class="profile-photo"><Portrait Src="@person.Image" Name="@person.FullName" /></div>
+            <div>
+                <p class="eyebrow">@person.Title</p>
+                <h2 id="profile-title">@person.FullName</h2>
+                @if (!string.IsNullOrWhiteSpace(person.Bio))
+                {
+                    <p>@person.Bio</p>
+                }
+                <h3>Sunduğu hizmetler</h3>
+                <p class="skills">@SkillNames(person)</p>
+                <form class="profile-actions" method="dialog">
+                    <a class="btn" href="services">Hizmet seç</a>
+                    <button class="btn ghost" type="submit" autofocus>Kapat</button>
+                </form>
+            </div>
+        </div>
+    }
+</dialog>
+
+@code {
+    private IReadOnlyList<Employee> _employees = [];
+    private IReadOnlyList<SalonService> _services = [];
+    private Employee? _profile;
+    private string? _appliedProfile;
+    private bool _openDialog;
+    private ElementReference _dialog;
+    private ElementReference _heading;
+    private string? _loadError;
+    private bool _ready;
+
+    [SupplyParameterFromQuery(Name = "calisan")]
+    public string? Calisan { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _employees = await Data.GetEmployeesAsync();
+            _services = await Data.GetServicesAsync();
+            _ready = true;
+        }
+        catch (Exception)
+        {
+            _loadError = "Ekip yüklenemedi. Sayfayı yenileyin.";
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!_ready || _appliedProfile == Calisan)
+            return;
+
+        _appliedProfile = Calisan;
+        if (_employees.FirstOrDefault(employee => employee.Id == Calisan) is { } employee)
+            ShowProfile(employee);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_openDialog)
+            return;
+
+        _openDialog = false;
+        await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/dialog.js");
+        await module.InvokeVoidAsync("show", _dialog, _heading);
+    }
+
+    private void ShowProfile(Employee employee)
+    {
+        _profile = employee;
+        _openDialog = true;
+    }
+
+    private string SkillNames(Employee employee)
+    {
+        var names = employee.ServiceIds
+            .Select(id => _services.FirstOrDefault(service => service.Id == id)?.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name));
+        return string.Join(" · ", names);
+    }
+}

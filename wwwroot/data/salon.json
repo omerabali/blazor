@@ -1,0 +1,28 @@
+{
+  "name": "Atölye",
+  "tagline": "Kırklareli'nde saç, sakal ve bakım.",
+  "story": "Atölye, 2016'da Yayla'da iki koltukla açıldı. Bugün aynı sokakta, acele ettirmeyen bir salon. Kesim, renk, sakal ve el bakımı ayrı odalarda yürür; randevu ise tek bir saatte toplanır. Müzik kısık, kahve sade, ayna fazla büyük değildir.",
+  "address": "Yayla Mahallesi, Cumhuriyet Caddesi No: 18, Merkez / Kırklareli",
+  "phone": "0288 214 45 90",
+  "instagram": "@atolye.kirklareli",
+  "hours": "Her gün 09:00 – 19:00",
+  "founded": "2016",
+  "faqs": [
+    {
+      "question": "Geç kalırsam ne olur?",
+      "answer": "Randevu saatinde salonda olmanızı rica ederiz. Kalan süre kapanışa yetişmiyorsa hizmet kısalır; bitiş saati 19:00’ı geçemez."
+    },
+    {
+      "question": "Randevuyu nasıl iptal ederim?",
+      "answer": "Randevularım sayfasından, başlangıç saati gelmeden iptal edebilirsiniz. İptal edilen saat yeniden uygun görünür."
+    },
+    {
+      "question": "Çocuk kesimi var mı?",
+      "answer": "12 yaş altı çocuk kesimi ve bebek kesimi ayrı hizmetlerdir. İkisini de veren çalışanlar listede birlikte çıkar."
+    },
+    {
+      "question": "Birden fazla hizmet seçebilir miyim?",
+      "answer": "Evet. Süre ve ücret toplanır. Çalışan listesinde yalnızca seçtiğiniz hizmetlerin tümünü verebilen kişiler kalır."
+    }
+  ]
+}

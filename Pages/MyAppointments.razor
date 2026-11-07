@@ -1,93 +1,210 @@
 @page "/my-appointments"
+@using System.Text.Json
 @inject SalonDataService Data
+@inject SalonContentService Content
 @inject AppointmentStore Store
 @inject BookingStateService Booking
+@implements IDisposable
 
 <PageTitle>Randevularım</PageTitle>
 
-@if (_created is not null)
-{
-    <div class="backdrop" @onclick="CloseCreated">
-        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="created-title" @onclick:stopPropagation="true">
-            <span class="popup-icon" aria-hidden="true">✓</span>
-            <h2 id="created-title">Randevunuz başarıyla oluşturuldu</h2>
-            @if (_created.Item is { } item)
-            {
-                <p class="popup-when">@When(item)</p>
-                <p>@EmployeeName(item) · @ServiceNames(item)</p>
-            }
-            <p class="popup-code">Randevu kodunuz: <strong>@_created.Code</strong></p>
-            <button class="btn" type="button" @onclick="CloseCreated">Tamam</button>
+<div class="page">
+    <header class="page-head appointments-head">
+        <div>
+            <h1>Randevularım</h1>
+            <p>Bugünkü saatlerinizi görün, geçmiş kayıtları filtreleyin.</p>
         </div>
-    </div>
-}
-
-<header class="page-head">
-    <p class="eyebrow">Randevularım</p>
-    <h1>Kayıtlı saatleriniz</h1>
-    <p>Randevular bu tarayıcıda saklanır. Başlangıcı gelmemiş olanı iptal edebilirsiniz.</p>
-</header>
-
-@if (_loadError is not null)
-{
-    <p class="banner" role="alert">@_loadError</p>
-}
-else if (!_ready)
-{
-    <p class="status">Randevular yükleniyor…</p>
-}
-else if (_items.Count == 0)
-{
-    <div class="empty">
-        <p>Henüz randevunuz yok.</p>
-        <a class="btn" href="services">Hizmet seç</a>
-    </div>
-}
-else
-{
-    <ul class="list">
-        @foreach (var item in _items)
+        @if (_items.Count > 0)
         {
-            var id = item.Id;
-            var cancelled = item.IsCancelled;
-            <li class="card @(cancelled ? "is-cancelled" : null)">
-                <div class="top">
-                    <strong>@item.Id</strong>
-                    <span class="badge @StatusClass(item)">@StatusText(item)</span>
-                </div>
-                <p class="when">@When(item)</p>
-                <p>@EmployeeName(item) · @ServiceNames(item)</p>
-                <p class="meta">@SalonFormat.Duration((int)(item.EndAt - item.StartAt).TotalMinutes) · @SalonFormat.Money(item.TotalPrice)</p>
-                <p class="who">@item.CustomerName · @item.Email · @item.Phone</p>
-                @if (CanCancel(item))
-                {
-                    @if (_confirmId == item.Id)
-                    {
-                        <div class="actions">
-                            <button class="btn danger" type="button" @onclick="() => CancelAsync(id)">İptali onayla</button>
-                            <button class="btn ghost" type="button" @onclick="CancelConfirm">Vazgeç</button>
-                        </div>
-                    }
-                    else
-                    {
-                        <button class="btn ghost" type="button" @onclick="() => AskCancel(id)">İptal et</button>
-                    }
-                }
-            </li>
+            <a class="btn" href="services">Yeni randevu</a>
         }
-    </ul>
-}
+    </header>
+
+    <div role="status">
+        @if (_createdCode is not null)
+        {
+            <p class="created">Randevunuz oluşturuldu. Kodunuz <strong>@_createdCode</strong></p>
+        }
+    </div>
+
+    @if (_loadError is not null)
+    {
+        <p class="banner" role="alert">@_loadError</p>
+    }
+    else if (!_ready)
+    {
+        <p class="status" role="status">Randevular yükleniyor…</p>
+    }
+    else if (_items.Count == 0)
+    {
+        <div role="status">
+            @if (_feedbackId is not null)
+            {
+                <p class="feedback feedback-summary" tabindex="-1" @ref="_feedbackElement">@_feedback</p>
+            }
+        </div>
+        <div class="empty">
+            @if (_shot is not null)
+            {
+                <img src="@_shot.Image" alt="@_shot.Alt" />
+            }
+            <div>
+                <h2>Henüz randevunuz yok</h2>
+                <p>Bir hizmet seçerek ilk randevunuzu oluşturabilirsiniz.</p>
+                <a class="btn" href="services">Hizmet seç</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        var now = DateTime.Now;
+        var grouped = _items.ToLookup(item => GroupOf(item, now));
+        var visibleGroups = Filters
+            .Where(filter => filter.View != View.All && (_view == View.All || _view == filter.View))
+            .Where(filter => grouped[filter.View].Any())
+            .ToArray();
+        var showFeedbackAbove = _feedbackId is not null &&
+            !visibleGroups.Any(group => grouped[group.View].Any(item => item.Id == _feedbackId));
+
+        <div class="filters" role="group" aria-label="Randevu filtreleri">
+            @foreach (var filter in Filters)
+            {
+                var selected = _view == filter.View;
+                var count = filter.View == View.All ? _items.Count : grouped[filter.View].Count();
+                <button type="button" class="filter" aria-pressed="@(selected ? "true" : "false")"
+                        disabled="@(_workingId is not null)" @onclick="() => SelectView(filter.View)">
+                    <span>@filter.Label</span>
+                    <span class="filter-count">@count</span>
+                </button>
+            }
+        </div>
+
+        <div role="status">
+            @if (showFeedbackAbove)
+            {
+                <p class="feedback feedback-summary" tabindex="-1" @ref="_feedbackElement">@_feedback</p>
+            }
+        </div>
+
+        @if (visibleGroups.Length == 0)
+        {
+            <div class="empty filtered-empty">
+                <div>
+                    <h2>@EmptyMessage(_view)</h2>
+                    <button class="btn ghost" type="button" @onclick="() => SelectView(View.All)">Tüm randevuları göster</button>
+                </div>
+            </div>
+        }
+
+        @foreach (var group in visibleGroups)
+        {
+            <section class="appointment-group" aria-labelledby="@($"group-{group.View}")">
+                <div class="group-heading">
+                    <h2 id="@($"group-{group.View}")">@group.Label</h2>
+                    @if (DateRangeHint(group.View) is { } hint)
+                    {
+                        <span>@hint</span>
+                    }
+                </div>
+                <ul class="list">
+                    @foreach (var item in OrderItems(group.View, grouped[group.View], now))
+                    {
+                        var id = item.Id;
+                        var employee = EmployeeOf(item);
+                        var (label, style) = StatusOf(item, now);
+                        <li @key="id" class="card @style">
+                            <div class="card-main">
+                                <div class="when">
+                                    <h3>@SalonFormat.Date(DateOnly.FromDateTime(item.StartAt))</h3>
+                                    <p>@SalonFormat.Clock(item.StartAt)–@SalonFormat.Clock(item.EndAt)</p>
+                                </div>
+                                <div class="booking">
+                                    <strong>@ServiceNames(item)</strong>
+                                    <span class="staff">
+                                        @if (employee?.Image is { Length: > 0 } face)
+                                        {
+                                            <img src="@face" alt="" loading="lazy" />
+                                        }
+                                        <span>@(employee?.FullName ?? item.EmployeeId)</span>
+                                    </span>
+                                </div>
+                                <div class="record-status">
+                                    <span class="badge @style">@label</span>
+                                    <strong>@SalonFormat.Money(item.TotalPrice)</strong>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <details class="record-details">
+                                    <summary>Randevu detayları</summary>
+                                    <dl>
+                                        <div><dt>Randevu kodu</dt><dd class="code">@id</dd></div>
+                                        <div><dt>Süre</dt><dd>@SalonFormat.Duration((int)(item.EndAt - item.StartAt).TotalMinutes)</dd></div>
+                                        <div><dt>Ad soyad</dt><dd>@item.CustomerName</dd></div>
+                                        <div><dt>E-posta</dt><dd>@item.Email</dd></div>
+                                        <div><dt>Telefon</dt><dd>@item.Phone</dd></div>
+                                    </dl>
+                                </details>
+                                @if (!item.IsCancelled && (item.StartAt > now || _workingId == id))
+                                {
+                                    <div class="actions">
+                                        @if (_confirmId == id)
+                                        {
+                                            <button class="btn danger" type="button" disabled="@(_workingId is not null)" @onclick="() => CancelAsync(id)">
+                                                @(_workingId == id ? "İptal ediliyor…" : "İptali onayla")
+                                            </button>
+                                            <button class="btn ghost" type="button" disabled="@(_workingId is not null)" @onclick="CancelConfirm">Vazgeç</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn ghost" type="button" disabled="@(_workingId is not null)" @onclick="() => AskCancel(id)">İptal et</button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div role="status">
+                                @if (_feedbackId == id)
+                                {
+                                    <p class="feedback" tabindex="-1" @ref="_feedbackElement">@_feedback</p>
+                                }
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    }
+</div>
 
 @code {
+    private const int UpcomingDays = 7;
+
+    private enum View { All, Today, Upcoming, Later, Past, Cancelled }
+
+    private static readonly (View View, string Label)[] Filters =
+    [
+        (View.All, "Tümü"),
+        (View.Today, "Bugün"),
+        (View.Upcoming, "Yaklaşan"),
+        (View.Later, "İleri tarihli"),
+        (View.Past, "Geçmiş"),
+        (View.Cancelled, "İptal edilenler")
+    ];
+
+    private readonly PeriodicTimer _statusTimer = new(TimeSpan.FromSeconds(30));
+    private View _view;
     private IReadOnlyList<SalonService> _services = [];
     private IReadOnlyList<Employee> _employees = [];
-    private List<Appointment> _items = [];
+    private IReadOnlyList<Appointment> _items = [];
     private string? _confirmId;
+    private string? _workingId;
+    private string? _feedbackId;
+    private string? _feedback;
+    private bool _focusFeedback;
+    private ElementReference _feedbackElement;
     private string? _loadError;
     private bool _ready;
-    private CreatedNotice? _created;
-
-    private sealed record CreatedNotice(string Code, Appointment? Item);
+    private string? _createdCode;
+    private GalleryShot? _shot;
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,70 +212,159 @@ else
         {
             _services = await Data.GetServicesAsync();
             _employees = await Data.GetEmployeesAsync();
-            await ReloadAsync();
+            _items = await Store.GetAllAsync();
             _ready = true;
-
-            var code = Booking.TakeCreatedCode();
-            if (code is not null)
-                _created = new CreatedNotice(code, _items.FirstOrDefault(appointment => appointment.Id == code));
+            _createdCode = Booking.TakeCreatedCode();
         }
         catch (Exception)
         {
             _loadError = "Randevular yüklenemedi. Sayfayı yenileyin.";
+            return;
+        }
+
+        if (_items.Count > 0)
+        {
+            _ = RefreshStatusAsync();
+            return;
+        }
+
+        try
+        {
+            _shot = (await Content.GetGalleryAsync()).FirstOrDefault();
+        }
+        catch (Exception)
+        {
+            _shot = null;
         }
     }
 
-    private async Task ReloadAsync()
+    private async Task RefreshStatusAsync()
     {
-        _items = (await Store.GetAllAsync())
-            .OrderByDescending(appointment => appointment.StartAt)
-            .ToList();
+        while (await _statusTimer.WaitForNextTickAsync())
+            await InvokeAsync(StateHasChanged);
     }
 
-    private void CloseCreated() => _created = null;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_focusFeedback)
+            return;
 
-    private void AskCancel(string id) => _confirmId = id;
+        _focusFeedback = false;
+        await _feedbackElement.FocusAsync();
+    }
 
-    private void CancelConfirm() => _confirmId = null;
+    private void SelectView(View view)
+    {
+        _view = view;
+        _confirmId = null;
+        _feedbackId = null;
+    }
+
+    private void AskCancel(string id)
+    {
+        _confirmId = id;
+        _feedbackId = null;
+    }
+
+    private void CancelConfirm()
+    {
+        _confirmId = null;
+        _feedbackId = null;
+    }
 
     private async Task CancelAsync(string id)
     {
-        await Store.CancelAsync(id);
-        _confirmId = null;
-        await ReloadAsync();
+        if (_workingId is not null)
+            return;
+
+        _workingId = id;
+        _feedbackId = null;
+        try
+        {
+            var result = await Store.CancelAsync(id);
+            _confirmId = null;
+            _feedback = result.Changed
+                ? "Randevu iptal edildi ve saat yeniden seçilebilir."
+                : "Randevu artık iptal edilemiyor. Başlangıç saatini ve durumunu kontrol edin.";
+            _items = result.Appointments;
+        }
+        catch (Exception ex) when (ex is JSException or JsonException)
+        {
+            _feedback = "Randevu güncellenemedi. Tarayıcı depolamasını kontrol edin ve tekrar deneyin.";
+        }
+        finally
+        {
+            _feedbackId = id;
+            _focusFeedback = true;
+            _workingId = null;
+        }
     }
 
-    private static bool CanCancel(Appointment item) => !item.IsCancelled && item.StartAt > DateTime.Now;
-
-    private static string StatusText(Appointment item)
+    private static View GroupOf(Appointment item, DateTime now)
     {
         if (item.IsCancelled)
-            return "İptal edildi";
-        if (item.StartAt <= DateTime.Now)
-            return "Süresi geçti";
-        return "Yaklaşan";
+            return View.Cancelled;
+        var daysUntil = DaysUntil(item, now);
+        if (daysUntil == 0)
+            return View.Today;
+        if (daysUntil < 0)
+            return View.Past;
+        return daysUntil <= UpcomingDays ? View.Upcoming : View.Later;
     }
 
-    private static string StatusClass(Appointment item)
+    private static IEnumerable<Appointment> OrderItems(View group, IEnumerable<Appointment> items, DateTime now) =>
+        group switch
+        {
+            View.Today => items.Where(item => item.EndAt > now).OrderBy(item => item.StartAt)
+                .Concat(items.Where(item => item.EndAt <= now).OrderByDescending(item => item.StartAt)),
+            View.Upcoming or View.Later => items.OrderBy(item => item.StartAt),
+            _ => items.OrderByDescending(item => item.StartAt)
+        };
+
+    private static (string Label, string Style) StatusOf(Appointment item, DateTime now)
     {
         if (item.IsCancelled)
-            return "is-cancelled";
-        if (item.StartAt <= DateTime.Now)
-            return "is-past";
-        return "is-upcoming";
+            return ("İptal edildi", "is-cancelled");
+        if (item.EndAt <= now)
+            return ("Süresi geçti", "is-past");
+        if (item.StartAt <= now)
+            return ("Sürüyor", "is-current");
+        var daysUntil = DaysUntil(item, now);
+        if (daysUntil == 0)
+            return ("Bugün", "is-today");
+
+        var label = daysUntil == 1 ? "Yarın" : $"{daysUntil} gün sonra";
+        return (label, daysUntil <= UpcomingDays ? "is-upcoming" : "is-later");
     }
 
-    private string When(Appointment item) =>
-        $"{SalonFormat.Date(DateOnly.FromDateTime(item.StartAt))} · {SalonFormat.Clock(item.StartAt)}–{SalonFormat.Clock(item.EndAt)}";
+    private static int DaysUntil(Appointment item, DateTime now) => (item.StartAt.Date - now.Date).Days;
 
-    private string EmployeeName(Appointment item) =>
-        _employees.FirstOrDefault(employee => employee.Id == item.EmployeeId)?.FullName ?? item.EmployeeId;
+    private static string? DateRangeHint(View view) => view switch
+    {
+        View.Upcoming => $"Sonraki {UpcomingDays} gün",
+        View.Later => $"{UpcomingDays + 1} gün ve sonrası",
+        _ => null
+    };
+
+    private static string EmptyMessage(View view) => view switch
+    {
+        View.Today => "Bugün için randevunuz yok",
+        View.Upcoming => $"Sonraki {UpcomingDays} günde randevunuz yok",
+        View.Later => "İleri tarihli randevunuz yok",
+        View.Past => "Önceki günlerden randevunuz yok",
+        _ => "İptal edilen randevunuz yok"
+    };
+
+    private Employee? EmployeeOf(Appointment item) =>
+        _employees.FirstOrDefault(employee => employee.Id == item.EmployeeId);
 
     private string ServiceNames(Appointment item)
     {
         var names = item.ServiceIds
-            .Select(id => _services.FirstOrDefault(service => service.Id == id)?.Name)
-            .Where(name => !string.IsNullOrWhiteSpace(name));
-        return string.Join(", ", names);
+            .Select(id => _services.FirstOrDefault(service => service.Id == id)?.Name ?? id);
+        var text = string.Join(", ", names);
+        return string.IsNullOrWhiteSpace(text) ? "Salon randevusu" : text;
     }
+
+    public void Dispose() => _statusTimer.Dispose();
 }

@@ -1,27 +1,41 @@
-<EditForm Model="Model" OnValidSubmit="SubmitAsync" novalidate>
+<EditForm Model="Model" OnValidSubmit="SubmitAsync" OnInvalidSubmit="FocusInvalidAsync" novalidate>
     <DataAnnotationsValidator />
     <div class="fields">
         <div class="field">
             <label for="customer-name">Ad soyad</label>
-            <InputText id="customer-name" @bind-Value="Model.FullName" maxlength="80" autocomplete="name" aria-required="true" />
-            <ValidationMessage For="() => Model.FullName" />
-        </div>
-        <div class="field">
-            <label for="customer-email">E-posta</label>
-            <InputText id="customer-email" type="email" @bind-Value="Model.Email" maxlength="120" placeholder="ad.soyad@gmail.com" autocomplete="email" aria-required="true" />
-            <ValidationMessage For="() => Model.Email" />
+            <InputText @ref="_name" id="customer-name" @bind-Value="Model.FullName" maxlength="80" autocomplete="name"
+                       aria-required="true" aria-describedby="customer-name-error" disabled="@Busy" />
+            <div class="field-message" id="customer-name-error"><ValidationMessage For="() => Model.FullName" /></div>
         </div>
         <div class="field">
             <label for="customer-phone">Telefon</label>
-            <InputText id="customer-phone" @bind-Value="Model.Phone" maxlength="10" inputmode="numeric" placeholder="5XXXXXXXXX" autocomplete="tel" aria-required="true" />
-            <ValidationMessage For="() => Model.Phone" />
+            <InputText @ref="_phone" id="customer-phone" type="tel" @bind-Value="Model.Phone" maxlength="10" inputmode="numeric"
+                       autocomplete="tel-national" aria-required="true" aria-describedby="customer-phone-hint customer-phone-error" disabled="@Busy" />
+            <small class="field-hint" id="customer-phone-hint">Başında 0 olmadan, ör. 5321234567.</small>
+            <div class="field-message" id="customer-phone-error"><ValidationMessage For="() => Model.Phone" /></div>
+        </div>
+        <div class="field field-wide">
+            <label for="customer-email">E-posta</label>
+            <InputText @ref="_email" id="customer-email" type="email" @bind-Value="Model.Email" maxlength="120"
+                       autocomplete="email" aria-required="true" aria-describedby="customer-email-error" disabled="@Busy" />
+            <div class="field-message" id="customer-email-error"><ValidationMessage For="() => Model.Email" /></div>
         </div>
     </div>
     @if (!string.IsNullOrWhiteSpace(Error))
     {
         <p class="form-error" role="alert">@Error</p>
     }
-    <button class="btn" type="submit" disabled="@Busy">@(Busy ? "Kaydediliyor…" : "Randevuyu oluştur")</button>
+    <p class="confirmation">
+        @if (Confirmation is not null)
+        {
+            <span>Onaylanacak saat <strong>@Confirmation</strong></span>
+        }
+        else
+        {
+            <span>Onaylamak için takvimden uygun bir saat seçin.</span>
+        }
+    </p>
+    <button class="btn" type="submit" disabled="@(Busy || Confirmation is null)">@(Busy ? "Kaydediliyor…" : "Randevuyu oluştur")</button>
 </EditForm>
 
 @code {
@@ -29,6 +43,21 @@
     [Parameter] public EventCallback<CustomerInfo> OnValidSubmit { get; set; }
     [Parameter] public string? Error { get; set; }
     [Parameter] public bool Busy { get; set; }
+    [Parameter] public string? Confirmation { get; set; }
+
+    private InputText? _name;
+    private InputText? _phone;
+    private InputText? _email;
 
     private Task SubmitAsync() => OnValidSubmit.InvokeAsync(Model);
+
+    private async Task FocusInvalidAsync(EditContext context)
+    {
+        var input = context.GetValidationMessages(context.Field(nameof(CustomerInfo.FullName))).Any() ? _name
+            : context.GetValidationMessages(context.Field(nameof(CustomerInfo.Phone))).Any() ? _phone
+            : _email;
+
+        if (input?.Element is { } element)
+            await element.FocusAsync();
+    }
 }

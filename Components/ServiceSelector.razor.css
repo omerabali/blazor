@@ -1,12 +1,14 @@
 .groups {
     display: flex;
     flex-direction: column;
-    gap: var(--space-24);
+    gap: var(--space-32);
 }
 
 .group h2 {
-    margin: 0 0 0.75rem;
-    font-size: 1.45rem;
+    margin: 0 0 0.85rem;
+    font-size: 2.2rem;
+    font-weight: 500;
+    scroll-margin-top: 5.5rem;
 }
 
 .grid {
@@ -14,63 +16,161 @@
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    grid-auto-rows: 1fr;
     gap: var(--space-16);
 }
 
 .card {
     width: 100%;
-    min-height: 148px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--paper);
+    color: inherit;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    transition: background-color var(--motion-fast), border-color var(--motion-fast);
+}
+
+@media (hover: hover) {
+    .card:hover {
+        border-color: var(--copper-dark);
+    }
+}
+
+.card.is-selected {
+    border-color: var(--copper-dark);
+    background: var(--copper-soft);
+}
+
+.photo,
+.body {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+}
+
+.photo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    padding: 0;
+    background: var(--secondary);
+    border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+    overflow: hidden;
+}
+
+.body {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-8);
-    text-align: left;
+    width: 100%;
+    min-block-size: 14rem;
     padding: var(--space-16);
-    border-radius: var(--space-16);
-    border: 1px solid var(--line);
+}
+
+.photo:focus-visible,
+.body:focus-visible {
+    outline-offset: -3px;
+}
+
+.photo img,
+.letters {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.photo img {
+    object-position: center 40%;
+}
+
+.letters {
+    display: grid;
+    place-items: center;
+    font-family: var(--serif);
+    font-size: 2.4rem;
+}
+
+.tag {
+    position: absolute;
+    left: var(--space-12);
+    top: var(--space-12);
     background: var(--paper);
-    cursor: pointer;
+    color: var(--text);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.66rem;
+    padding: 0.25rem 0.45rem;
 }
 
-.card:hover {
-    border-color: var(--primary);
-}
-
-.card:active {
-    background: var(--secondary);
-}
-
-.card.is-selected {
-    background: var(--secondary);
-    border-color: var(--primary);
-    box-shadow: inset 0 0 0 1px var(--primary);
+.inspect-label {
+    position: absolute;
+    right: var(--space-8);
+    bottom: var(--space-8);
+    padding: var(--space-4) var(--space-12);
+    border-radius: var(--radius-control);
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 0.875rem;
 }
 
 .name {
     font-family: var(--serif);
-    font-size: 1.45rem;
-    line-height: 1.15;
+    font-size: 1.55rem;
+    line-height: 1.1;
+    font-weight: 600;
 }
 
 .description {
     color: var(--muted);
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+}
+
+.card-footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-8);
+    margin-top: auto;
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--line);
 }
 
 .meta {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-12);
+    display: grid;
+    gap: var(--space-2);
     color: var(--muted);
-    margin-top: auto;
+    font-size: 0.92rem;
+}
+
+.meta strong {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .flag {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    padding: var(--space-4) var(--space-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    font-size: 0.875rem;
+    font-weight: 600;
     color: var(--copper-dark);
+    white-space: nowrap;
+}
+
+.is-selected .flag {
+    border-color: var(--copper-dark);
+    color: var(--on-primary);
+    background: var(--primary);
 }

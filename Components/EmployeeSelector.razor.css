@@ -1,71 +1,90 @@
 .empty {
     margin: 0;
     padding: var(--space-16);
-    border-radius: var(--space-16);
     background: var(--copper-soft);
     color: var(--ink);
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: var(--space-16);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
+    gap: var(--space-8);
 }
 
 .card {
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-8);
-    min-height: 132px;
-    padding: var(--space-16);
-    border-radius: var(--space-16);
+    position: relative;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 20px;
+    align-items: center;
+    gap: var(--space-12);
+    min-height: 72px;
+    padding: var(--space-8);
     border: 1px solid var(--line);
+    border-radius: var(--radius-control);
     background: var(--paper);
     cursor: pointer;
+    transition: background-color var(--motion-fast), border-color var(--motion-fast);
 }
 
-.card:hover {
-    border-color: var(--primary);
+.card input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+}
+
+.card:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: var(--space-2);
+}
+
+.card:has(input:disabled) {
+    cursor: wait;
 }
 
 .card.is-selected {
-    background: var(--ink);
-    color: var(--on-primary);
-    border-color: var(--ink);
+    border-color: var(--copper-dark);
+    background: var(--copper-soft);
+}
+
+@media (hover: hover) {
+    .card:hover {
+        border-color: var(--copper-dark);
+    }
+}
+
+.face {
+    width: 44px;
+}
+
+.copy {
+    display: grid;
+    gap: var(--space-2);
 }
 
 .name {
     font-family: var(--serif);
-    font-size: 1.35rem;
-    line-height: 1.15;
+    font-size: 1.3rem;
+    line-height: 1.1;
 }
 
 .title {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--copper-dark);
-}
-
-.skills {
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: 0.875rem;
 }
 
-.card.is-selected .title,
-.card.is-selected .skills,
-.card.is-selected .flag {
-    color: var(--secondary);
+.check {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--copper-dark);
+    border-radius: 50%;
+    color: var(--on-primary);
+    font-size: 0.75rem;
 }
 
-.flag {
-    margin-top: auto;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--copper-dark);
+.is-selected .check {
+    background: var(--primary);
+    border-color: var(--primary);
 }

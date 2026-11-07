@@ -3,54 +3,144 @@
     "id": "E01",
     "fullName": "Ayşe Yılmaz",
     "title": "Kıdemli stilist",
-    "serviceIds": ["S01", "S02", "S03", "S04", "S05", "S07", "S11", "S14", "S17"]
+    "image": "images/team/e01.jpg",
+    "bio": "Kesimde sade bir çizgi tutar, rengi aynı gün planlar. Dip boya ve balyajı acele ettirmeden bitirir.",
+    "years": 12,
+    "serviceIds": ["S01", "S02", "S03", "S04", "S05", "S07", "S11", "S14", "S17", "S31"]
   },
   {
     "id": "E02",
     "fullName": "Mehmet Demir",
     "title": "Berber",
-    "serviceIds": ["S01", "S02", "S08", "S13", "S19"]
+    "image": "images/team/e02.jpg",
+    "bio": "Kesim ve sakalı aynı koltukta bitirir. Fade, ustura ve çocuk saçında temposu sakindir.",
+    "years": 9,
+    "serviceIds": ["S01", "S02", "S08", "S13", "S19", "S22", "S23", "S24", "S29", "S32", "S35"]
   },
   {
     "id": "E03",
     "fullName": "Zeynep Kaya",
     "title": "Bakım uzmanı",
-    "serviceIds": ["S02", "S07", "S09", "S10", "S11", "S18", "S21"]
+    "image": "images/team/e03.jpg",
+    "bio": "Maske, keratin ve kaş işlerini aynı ritimde yapar. Cilt bakımında acele ettirmez.",
+    "years": 8,
+    "serviceIds": ["S02", "S07", "S09", "S10", "S11", "S18", "S21", "S26", "S28", "S30", "S33"]
   },
   {
     "id": "E04",
     "fullName": "Can Öztürk",
     "title": "Teknik uzman",
-    "serviceIds": ["S01", "S03", "S06", "S08", "S12"]
+    "image": "images/team/e04.jpg",
+    "bio": "Perma, keratin ve boyayı teknik sırayla uygular. Sakal tıraşını da kendi koltuğunda alır.",
+    "years": 11,
+    "serviceIds": ["S01", "S03", "S06", "S08", "S12", "S23", "S32", "S35"]
   },
   {
     "id": "E05",
     "fullName": "Elif Arslan",
     "title": "Renk uzmanı",
-    "serviceIds": ["S03", "S04", "S05", "S06", "S07", "S16", "S17", "S18"]
+    "image": "images/team/e05.jpg",
+    "bio": "Balyaj ve ombrede geçişi elle kurar. Boya sonrası onarıcı bakımı aynı randevuya ekler.",
+    "years": 10,
+    "serviceIds": ["S03", "S04", "S05", "S06", "S07", "S16", "S17", "S18", "S30", "S31"]
   },
   {
     "id": "E06",
     "fullName": "Burak Şahin",
     "title": "Berber",
-    "serviceIds": ["S01", "S08", "S13", "S19"]
+    "image": "images/team/e06.jpg",
+    "bio": "Kısa kesim ve sakal hattında net çalışır. Çocuk ve bebek kesiminde koltuğu yavaşlatır.",
+    "years": 6,
+    "serviceIds": ["S01", "S08", "S13", "S19", "S22", "S23", "S24", "S29", "S35"]
   },
   {
     "id": "E07",
     "fullName": "Selin Aydın",
     "title": "Gelin saçı uzmanı",
-    "serviceIds": ["S02", "S07", "S11", "S14", "S15"]
+    "image": "images/team/e07.jpg",
+    "bio": "Prova ile düğün günü saçını aynı elde tutar. Topuz ve dağınık toplamada aksesuarı saça göre seçer.",
+    "years": 7,
+    "serviceIds": ["S02", "S07", "S11", "S14", "S15", "S25", "S36"]
   },
   {
     "id": "E08",
     "fullName": "Deniz Koç",
     "title": "Renk ve bakım uzmanı",
-    "serviceIds": ["S03", "S06", "S07", "S16", "S17", "S18"]
+    "image": "images/team/e08.jpg",
+    "bio": "Renkten önce saçın bağını okur. Botoks ve tonlamayı boyanın üstüne ekler.",
+    "years": 9,
+    "serviceIds": ["S03", "S06", "S07", "S16", "S17", "S18", "S30", "S31"]
   },
   {
     "id": "E09",
     "fullName": "Merve Çelik",
     "title": "El ve ayak bakımı uzmanı",
-    "serviceIds": ["S09", "S10", "S20", "S21"]
+    "image": "images/team/e09.jpg",
+    "bio": "Manikür, pedikür ve protez tırnağı aynı masada toplar. Kaş ve kirpiği kısa randevuya sığdırır.",
+    "years": 5,
+    "serviceIds": ["S09", "S10", "S20", "S21", "S26", "S27", "S28", "S33", "S34"]
+  },
+  {
+    "id": "E10",
+    "fullName": "Ahmet Yılmaz",
+    "title": "Kıdemli stilist",
+    "image": "images/team/e10.jpg",
+    "bio": "Form kesimi ve rengi birlikte düşünür. Fönü saçın dökülüşüne göre bırakır.",
+    "years": 14,
+    "serviceIds": ["S01", "S02", "S03", "S04", "S05", "S07", "S11", "S14", "S17", "S31"]
+  },
+  {
+    "id": "E11",
+    "fullName": "Emre Aksoy",
+    "title": "Fade uzmanı",
+    "image": "images/team/e11.jpg",
+    "bio": "Yan ve ensede geçişi milim milim indirir. Kesimle sakalı aynı hatta bağlar.",
+    "years": 6,
+    "serviceIds": ["S01", "S02", "S08", "S13", "S19", "S22", "S23", "S24", "S29", "S32"]
+  },
+  {
+    "id": "E12",
+    "fullName": "Hakan Yücel",
+    "title": "Ustura ustası",
+    "image": "images/team/e12.jpg",
+    "bio": "Sıcak havlu ve usturayla tıraşı yavaş alır. Sakal boyasını tıraşın ardından eşitler.",
+    "years": 18,
+    "serviceIds": ["S01", "S08", "S19", "S22", "S23", "S24", "S35"]
+  },
+  {
+    "id": "E13",
+    "fullName": "İrem Bal",
+    "title": "Saç uzatma uzmanı",
+    "image": "images/team/e13.jpg",
+    "bio": "Çıt çıt ve kaynakta boyu yüze göre keser. Gelin provasında duvağı saça yerleştirir.",
+    "years": 8,
+    "serviceIds": ["S01", "S02", "S07", "S11", "S14", "S25", "S36"]
+  },
+  {
+    "id": "E14",
+    "fullName": "Ceren Usta",
+    "title": "Protez tırnak uzmanı",
+    "image": "images/team/e14.jpg",
+    "bio": "Jel ve akrilikte tırnak yatağını yormadan uzatır. El-ayak paketini tek randevuda bitirir.",
+    "years": 7,
+    "serviceIds": ["S09", "S10", "S20", "S21", "S26", "S27", "S28", "S33", "S34"]
+  },
+  {
+    "id": "E15",
+    "fullName": "Lara Demir",
+    "title": "Renk asistanı",
+    "image": "images/team/e15.jpg",
+    "bio": "Tonlama ve dip boyada karışımı not eder. Bakımı boyanın bekleme süresine yerleştirir.",
+    "years": 4,
+    "serviceIds": ["S02", "S03", "S04", "S07", "S17", "S18", "S31"]
+  },
+  {
+    "id": "E16",
+    "fullName": "Kerem Acar",
+    "title": "Berber",
+    "image": "images/team/e16.jpg",
+    "bio": "Kısa erkek kesimi ve sakal şekillendirmede sade durur. Bebek kesiminde acele etmez.",
+    "years": 5,
+    "serviceIds": ["S01", "S02", "S08", "S13", "S19", "S22", "S29"]
   }
 ]

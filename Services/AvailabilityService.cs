@@ -17,7 +17,8 @@ public sealed class AvailabilityService
         DateTime? clock = null)
     {
         var result = new List<TimeSlotOption>();
-        if (durationMinutes <= 0 || string.IsNullOrWhiteSpace(employeeId))
+        if (durationMinutes <= 0 || durationMinutes > (Closes - Opens).TotalMinutes ||
+            string.IsNullOrWhiteSpace(employeeId))
             return result;
 
         var now = clock ?? DateTime.Now;

@@ -1,0 +1,29 @@
+<span class="portrait">
+    @if (!string.IsNullOrWhiteSpace(Src))
+    {
+        <img src="@Src" alt="@Alt" loading="lazy" />
+    }
+    else
+    {
+        <span class="letters" aria-hidden="true">@Letters</span>
+    }
+</span>
+
+@code {
+    [Parameter] public string? Src { get; set; }
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string Alt { get; set; } = "";
+
+    private string Letters
+    {
+        get
+        {
+            var parts = Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+                return "A";
+            if (parts.Length == 1)
+                return parts[0][..1].ToUpperInvariant();
+            return $"{char.ToUpperInvariant(parts[0][0])}{char.ToUpperInvariant(parts[^1][0])}";
+        }
+    }
+}
