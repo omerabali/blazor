@@ -7,7 +7,7 @@ namespace KuaforRandevu.Services;
 
 public sealed class AppointmentStore : IAsyncDisposable
 {
-    private const string StorageKey = "kuafor.appointments";
+    public const string StorageKey = "kuafor.appointments";
     private readonly IJSRuntime _js;
     private readonly AvailabilityService _availability;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);

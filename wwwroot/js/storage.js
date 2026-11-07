@@ -17,3 +17,16 @@ export function updateItem(key, update) {
         return true;
     });
 }
+
+export function watchItem(key, handler) {
+    const listener = (event) => {
+        if (event.storageArea === localStorage && event.key === key)
+            handler.invokeMethodAsync("OnStorageChanged");
+    };
+    window.addEventListener("storage", listener);
+    return {
+        dispose() {
+            window.removeEventListener("storage", listener);
+        }
+    };
+}

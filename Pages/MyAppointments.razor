@@ -1,10 +1,12 @@
 @page "/my-appointments"
+@using System.Diagnostics.CodeAnalysis
 @using System.Text.Json
 @inject SalonDataService Data
 @inject SalonContentService Content
 @inject AppointmentStore Store
 @inject BookingStateService Booking
-@implements IDisposable
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
 <PageTitle>Randevularım</PageTitle>
 
@@ -26,6 +28,14 @@
             <p class="created">Randevunuz oluşturuldu. Kodunuz <strong>@_createdCode</strong></p>
         }
     </div>
+
+    @if (_refreshError is not null)
+    {
+        <div class="banner" role="alert">
+            <p>@_refreshError</p>
+            <button class="btn ghost" type="button" disabled="@(_refreshing || _workingId is not null)" @onclick="ReloadFromStoreAsync">Tekrar dene</button>
+        </div>
+    }
 
     @if (_loadError is not null)
     {
@@ -191,6 +201,9 @@
     ];
 
     private readonly PeriodicTimer _statusTimer = new(TimeSpan.FromSeconds(30));
+    private IJSObjectReference? _storage;
+    private IJSObjectReference? _watchSubscription;
+    private DotNetObjectReference<StorageWatch>? _watch;
     private View _view;
     private IReadOnlyList<SalonService> _services = [];
     private IReadOnlyList<Employee> _employees = [];
@@ -202,6 +215,9 @@
     private bool _focusFeedback;
     private ElementReference _feedbackElement;
     private string? _loadError;
+    private string? _refreshError;
+    private bool _refreshing;
+    private bool _disposed;
     private bool _ready;
     private string? _createdCode;
     private GalleryShot? _shot;
@@ -222,11 +238,10 @@
             return;
         }
 
+        _ = RefreshStatusAsync();
+
         if (_items.Count > 0)
-        {
-            _ = RefreshStatusAsync();
             return;
-        }
 
         try
         {
@@ -240,12 +255,65 @@
 
     private async Task RefreshStatusAsync()
     {
-        while (await _statusTimer.WaitForNextTickAsync())
-            await InvokeAsync(StateHasChanged);
+        try
+        {
+            while (await _statusTimer.WaitForNextTickAsync())
+                await InvokeAsync(ReloadFromStoreAsync);
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
+    private async Task WatchStorageAsync()
+    {
+        try
+        {
+            _storage = await JS.InvokeAsync<IJSObjectReference>("import", "./js/storage.js");
+            _watch = DotNetObjectReference.Create(new StorageWatch(() => InvokeAsync(ReloadFromStoreAsync)));
+            _watchSubscription = await _storage.InvokeAsync<IJSObjectReference>("watchItem", AppointmentStore.StorageKey, _watch);
+        }
+        catch (JSException)
+        {
+        }
+    }
+
+    private async Task ReloadFromStoreAsync()
+    {
+        if (_disposed || !_ready || _refreshing || _workingId is not null)
+            return;
+
+        _refreshing = true;
+        try
+        {
+            var items = await Store.GetAllAsync();
+            if (_disposed || _workingId is not null)
+                return;
+
+            _items = items;
+            _refreshError = null;
+            var pending = _confirmId is null ? null : items.FirstOrDefault(item => item.Id == _confirmId);
+            if (_confirmId is not null && (pending is null || pending.IsCancelled))
+                _confirmId = null;
+        }
+        catch (Exception ex) when (ex is JSException or JsonException)
+        {
+            _refreshError = "Randevular güncellenemedi. Gösterilen bilgiler eski olabilir. Tekrar deneyin.";
+        }
+        finally
+        {
+            _refreshing = false;
+        }
+
+        if (!_disposed)
+            StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender && _loadError is null)
+            await WatchStorageAsync();
+
         if (!_focusFeedback)
             return;
 
@@ -366,5 +434,34 @@
         return string.IsNullOrWhiteSpace(text) ? "Salon randevusu" : text;
     }
 
-    public void Dispose() => _statusTimer.Dispose();
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        _statusTimer.Dispose();
+        try
+        {
+            if (_watchSubscription is not null)
+                await _watchSubscription.InvokeVoidAsync("dispose");
+        }
+        catch (JSException)
+        {
+        }
+
+        if (_watchSubscription is not null)
+            await _watchSubscription.DisposeAsync();
+        if (_storage is not null)
+            await _storage.DisposeAsync();
+        _watch?.Dispose();
+    }
+
+    private sealed class StorageWatch
+    {
+        private readonly Func<Task> _reload;
+
+        [DynamicDependency(nameof(OnStorageChanged))]
+        public StorageWatch(Func<Task> reload) => _reload = reload;
+
+        [JSInvokable]
+        public Task OnStorageChanged() => _reload();
+    }
 }

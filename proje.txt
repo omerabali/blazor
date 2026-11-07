@@ -16,7 +16,7 @@ Ad soyad: Ömer Abalı
 - Randevu ve iptal durumunun localStorage içinde saklanması; iptal edilen saatin yeniden uygun sayılması
 
 Üye 2
-Öğrenci numarası:
+Öğrenci numarası: 1230505060
 Ad soyad: Murat Aydoğan
 Üstlendiği görevler:
 - services.json, employees.json ve busy-slots.json dosyalarının hazırlanması
@@ -26,7 +26,7 @@ Ad soyad: Murat Aydoğan
 - EmployeeSelector ile seçilen hizmetlerin tamamını verebilen çalışanların listelenmesi
 
 Üye 3
-Öğrenci numarası:
+Öğrenci numarası: 1230505031
 Ad soyad: Kerem Yıldız
 Üstlendiği görevler:
 - AppointmentCalendar ile gün ve saatlerin ekranda gösterilmesi
